@@ -727,6 +727,23 @@ void Connection::update() {
 			break;
 
 		case ReceivePacketType::Vibrate:
+
+			break;
+
+		case ReceivePacketType::Haptics:
+			if (len < 9) {
+				m_Logger.warn("Wrong haptic packet");
+				break;
+			}
+#ifdef PIN_TACT_MOTOR
+			HapticDataPacket hapticDataPacket;
+			memcpy(&hapticDataPacket, m_Packet + 4, sizeof(hapticDataPacket));
+			if (hapticDataPacket.intensity > 0) {
+				digitalWrite(PIN_TACT_MOTOR, HIGH);
+			} else {
+				digitalWrite(PIN_TACT_MOTOR, LOW);
+			}
+#endif
 			break;
 
 		case ReceivePacketType::Handshake:
