@@ -755,11 +755,20 @@ void Connection::update() {
 			HapticDataPacket hapticDataPacket;
 			memcpy(&hapticDataPacket, m_Packet + 4, sizeof(hapticDataPacket));
 			m_Logger.debug("Intensity: %f Duration: %d", hapticDataPacket.intensity, hapticDataPacket.duration);
-			if (hapticDataPacket.intensity > 0) {
-				digitalWrite(PIN_TACT_MOTOR, HIGH);
-			} else {
-				digitalWrite(PIN_TACT_MOTOR, LOW);
+			float intensity = hapticDataPacket.intensity;
+			if (!configured_haptic_pwm) {
+				configured_haptic_pwm = true;
+				ledcAttachChannel(PIN_TACT_MOTOR, 20000, 8, 1);
 			}
+			if (intensity < 0.0f) {
+				intensity = 0.0f;
+			}
+			if (intensity > 1.0f) {
+				intensity = 1.0f;
+			}
+			int duty = (int)(intensity * 255.0f);
+
+			ledcWrite(PIN_TACT_MOTOR, duty);
 #endif
 			break;
 		}
