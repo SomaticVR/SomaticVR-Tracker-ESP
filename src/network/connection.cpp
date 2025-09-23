@@ -754,7 +754,7 @@ void Connection::update() {
 #ifdef PIN_TACT_MOTOR
 			HapticDataPacket hapticDataPacket;
 			memcpy(&hapticDataPacket, m_Packet + 4, sizeof(hapticDataPacket));
-			m_Logger.debug("Intensity: %f Duration: %d", hapticDataPacket.intensity, hapticDataPacket.duration);
+			m_Logger.debug("Intensity: %f Duration: %d", (float)hapticDataPacket.intensity, (int)hapticDataPacket.duration);
 			float intensity = hapticDataPacket.intensity;
 			if (!configured_haptic_pwm) {
 				configured_haptic_pwm = true;
