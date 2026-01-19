@@ -29,7 +29,7 @@
 #define LED_RAMP_MILLIS 50
 
 #define LEDC_MAX ((1u<<m_ledcBits)-1)
-#define MAX_BRIGHTNESS 0.10f // in percent
+#define MAX_BRIGHTNESS 1.00f // in percent
 
 
 namespace SlimeVR
