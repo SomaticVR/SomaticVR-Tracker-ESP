@@ -166,13 +166,7 @@ enum class TrackerType : uint8_t {
 	TRACKER_TYPE_SVR_GLOVE_RIGHT
 };
 
-#ifdef ESP8266
-#define HARDWARE_MCU MCU_ESP8266
-#elif defined(ESP32)
 #define HARDWARE_MCU MCU_ESP32
-#else
-#define HARDWARE_MCU MCU_UNKNOWN
-#endif
 
 #define CURRENT_CONFIGURATION_VERSION 1
 

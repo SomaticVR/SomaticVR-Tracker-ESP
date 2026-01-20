@@ -31,9 +31,7 @@
 #include "logging/Logger.h"
 #include "utils.h"
 
-#if ESP32
 #include "nvs_flash.h"
-#endif
 
 namespace SerialCommands {
 SlimeVR::Logging::Logger logger("SerialCommands");
@@ -172,7 +170,6 @@ void printState() {
 	);
 }
 
-#if ESP32
 String getEncryptionTypeName(wifi_auth_mode_t type) {
 	switch (type) {
 		case WIFI_AUTH_OPEN:
@@ -196,21 +193,6 @@ String getEncryptionTypeName(wifi_auth_mode_t type) {
 		case WIFI_AUTH_WPA3_ENT_192:
 			return "WPA3_ENT_192";
 	}
-#else
-String getEncryptionTypeName(uint8_t type) {
-	switch (type) {
-		case ENC_TYPE_NONE:
-			return "OPEN";
-		case ENC_TYPE_WEP:
-			return "WEP";
-		case ENC_TYPE_TKIP:
-			return "WPA_PSK";
-		case ENC_TYPE_CCMP:
-			return "WPA2_PSK";
-		case ENC_TYPE_AUTO:
-			return "WPA_WPA2_PSK";
-	}
-#endif
 	return "UNKNOWN";
 }
 
@@ -351,15 +333,8 @@ void cmdFactoryReset(CmdParser* parser) {
 	configuration.reset();
 
 	WiFi.disconnect(true);  // Clear WiFi credentials
-#if ESP8266
-	ESP.eraseConfig();  // Clear ESP config
-#elif ESP32
+
 	nvs_flash_erase();
-#else
-#warning SERIAL COMMAND FACTORY RESET NOT SUPPORTED
-	logger.info("FACTORY RESET NOT SUPPORTED");
-	return;
-#endif
 
 #if defined(WIFI_CREDS_SSID) && defined(WIFI_CREDS_PASSWD)
 #warning FACTORY RESET does not clear your hardcoded WiFi credentials!

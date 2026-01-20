@@ -74,9 +74,7 @@
 #define SFCALIBRATOR SlimeVR::Sensor::SoftfusionCalibrator
 #endif
 
-#if ESP32
 #include "driver/i2c.h"
-#endif
 
 namespace SlimeVR::Sensors {
 using SoftFusionLSM6DS3TRC

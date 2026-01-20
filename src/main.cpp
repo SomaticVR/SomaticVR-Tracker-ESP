@@ -90,14 +90,12 @@ void setup() {
     pinMode(PIN_TACT_MOTOR, OUTPUT);
     digitalWrite(PIN_TACT_MOTOR, buttonMonitor.isPressed()?HIGH:LOW);
 #endif
-#ifdef ESP32C3
     // Wait for the Computer to be able to connect.
     delay(1000);
 #ifdef PIN_TACT_MOTOR
     digitalWrite(PIN_TACT_MOTOR, LOW);
 #endif
     delay(1000);
-#endif
 
 	Serial.begin(serialBaudRate);
 	globalTimer = timer_create_default();
@@ -125,19 +123,14 @@ void setup() {
 
 	// join I2C bus
 
-#if ESP32
 	// For some unknown reason the I2C seem to be open on ESP32-C3 by default. Let's
 	// just close it before opening it again. (The ESP32-C3 only has 1 I2C.)
 	Wire.end();
-#endif
 
 	// using `static_cast` here seems to be better, because there are 2 similar function
 	// signatures
 	Wire.begin(static_cast<int>(PIN_IMU_SDA), static_cast<int>(PIN_IMU_SCL));
 
-#ifdef ESP8266
-	Wire.setClockStretchLimit(150000L);  // Default stretch limit 150mS
-#endif
 #ifdef ESP32  // Counterpart on ESP32 to ClockStretchLimit
 	Wire.setTimeOut(150);
 #endif

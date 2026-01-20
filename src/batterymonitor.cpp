@@ -24,23 +24,7 @@
 
 #include "GlobalVars.h"
 
-#if ESP8266 \
-	&& (BATTERY_MONITOR == BAT_INTERNAL || BATTERY_MONITOR == BAT_INTERNAL_MCP3021)
-ADC_MODE(ADC_VCC);
-#endif
-
 void BatteryMonitor::Setup() {
-#if BATTERY_MONITOR == BAT_MCP3021 || BATTERY_MONITOR == BAT_INTERNAL_MCP3021
-	for (uint8_t i = 0x48; i < 0x4F; i++) {
-		if (I2CSCAN::hasDevOnBus(i)) {
-			address = i;
-			break;
-		}
-	}
-	if (address == 0) {
-		m_Logger.error("MCP3021 not found on I2C bus");
-	}
-#endif
 }
 
 void BatteryMonitor::Loop() {
@@ -49,49 +33,8 @@ void BatteryMonitor::Loop() {
 	auto now_ms = millis();
 	if (now_ms - last_battery_sample >= batterySampleRate) {
 		last_battery_sample = now_ms;
-		voltage = -1;
-#if ESP8266 \
-	&& (BATTERY_MONITOR == BAT_INTERNAL || BATTERY_MONITOR == BAT_INTERNAL_MCP3021)
-		// Find out what your max measurement is (voltage_3_3).
-		// Take the max measurement and check if it was less than 50mV
-		// if yes output 5.0V
-		// if no output 3.3V - dropvoltage + 0.1V
-		auto ESPmV = ESP.getVcc();
-		if (ESPmV > voltage_3_3) {
-			voltage_3_3 = ESPmV;
-		} else {
-			// Calculate drop in mV
-			ESPmV = voltage_3_3 - ESPmV;
-			if (ESPmV < 50) {
-				voltage = 5.0F;
-			} else {
-				voltage = 3.3F - ((float)ESPmV / 1000.0F)
-						+ 0.1F;  // we assume 100mV drop on the linear converter
-			}
-		}
-#endif
-#if ESP8266 && BATTERY_MONITOR == BAT_EXTERNAL
-		voltage = ((float)analogRead(PIN_BATTERY_LEVEL)) * ADCVoltageMax / ADCResolution
-				* ADCMultiplier;
-#endif
-#if ESP32 && BATTERY_MONITOR == BAT_EXTERNAL
 		voltage
 			= ((float)analogReadMilliVolts(PIN_BATTERY_LEVEL)) / 1000 * ADCMultiplier;
-#endif
-#if BATTERY_MONITOR == BAT_MCP3021 || BATTERY_MONITOR == BAT_INTERNAL_MCP3021
-		if (address > 0) {
-			Wire.beginTransmission(address);
-			Wire.requestFrom(address, (uint8_t)2);
-			auto MSB = Wire.read();
-			auto LSB = Wire.read();
-			auto status = Wire.endTransmission();
-			if (status == 0) {
-				float v = (((uint16_t)(MSB & 0x0F) << 6) | (uint16_t)(LSB >> 2));
-				v *= ADCMultiplier;
-				voltage = (voltage > 0) ? min(voltage, v) : v;
-			}
-		}
-#endif
 		if (voltage > 0)  // valid measurement
 		{
 			// Estimate battery level, 3.2V is 0%, 4.17V is 100% (1.0)

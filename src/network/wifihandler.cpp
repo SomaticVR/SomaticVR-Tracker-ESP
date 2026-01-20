@@ -23,9 +23,7 @@
 #include "GlobalVars.h"
 #include "globals.h"
 #include "logging/Logger.h"
-#if !ESP8266
 #include "esp_wifi.h"
-#endif
 
 unsigned long lastWifiReportTime = 0;
 unsigned long wifiConnectionTimeout = millis();
@@ -75,13 +73,6 @@ void WiFiNetwork::setUp() {
     WiFi.hostname((hostname + String(mac[3]) + String(mac[4]) + String(mac[5])).c_str());
     WiFi.persistent(true);
     WiFi.mode(WIFI_STA);
-    #if ESP8266
-        #if USE_ATTENUATION
-	WiFi.setOutputPower(20.0 - ATTENUATION_N);
-        #endif
-    WiFi.setPhyMode(WIFI_PHY_MODE_11N);
-    #endif
-    #if ESP32
     esp_err_t espStatus = esp_wifi_set_max_tx_power(9.54*4); // argument is max dBm * 4
     int8_t power = 0;
     switch (espStatus)
@@ -103,7 +94,6 @@ void WiFiNetwork::setUp() {
         default:
             wifiHandlerLogger.debug("Failed to set max WiFi TX power. Reason: Unknown. error code: %04x", espStatus);
     }
-    #endif
     if (!WiFi.SSID().isEmpty())
         wifiHandlerLogger.info(
             "Loaded credentials for SSID '%s' and pass length %d",
@@ -128,18 +118,6 @@ void WiFiNetwork::setUp() {
     wifiState = SLIME_WIFI_SAVED_ATTEMPT;
     wifiConnectionTimeout = millis();
 
-#if ESP8266
-#if POWERSAVING_MODE == POWER_SAVING_NONE
-    WiFi.setSleepMode(WIFI_NONE_SLEEP);
-#elif POWERSAVING_MODE == POWER_SAVING_MINIMUM
-    WiFi.setSleepMode(WIFI_MODEM_SLEEP);
-#elif POWERSAVING_MODE == POWER_SAVING_MODERATE
-    WiFi.setSleepMode(WIFI_MODEM_SLEEP, 10);
-#elif POWERSAVING_MODE == POWER_SAVING_MAXIMUM
-    WiFi.setSleepMode(WIFI_LIGHT_SLEEP, 10);
-#error "MAX POWER SAVING NOT WORKING YET, please disable!"
-#endif
-#else
 #if POWERSAVING_MODE == POWER_SAVING_NONE
     WiFi.setSleep(WIFI_PS_NONE);
 #elif POWERSAVING_MODE == POWER_SAVING_MINIMUM
@@ -154,7 +132,6 @@ void WiFiNetwork::setUp() {
 	} else {
         wifiHandlerLogger.error("Unable to get WiFi config, power saving not enabled!");
     }
-#endif
 #endif
 }
 
@@ -187,43 +164,12 @@ void WiFiNetwork::upkeep() {
                 return;
 				case SLIME_WIFI_SAVED_ATTEMPT:  // Couldn't connect with first set of
 												// credentials
-                    #if ESP8266
-					// Try again but with 11G but only if there are credentials,
-					// otherwise we just waste time before switching to hardcoded
-					// credentials.
-                        if (WiFi.SSID().length() > 0) {
-                            #if USE_ATTENUATION
-						WiFi.setOutputPower(20.0 - ATTENUATION_G);
-                            #endif
-                            WiFi.setPhyMode(WIFI_PHY_MODE_11G);
-                            setStaticIPIfDefined();
-                            WiFi.begin();
-                            wifiConnectionTimeout = millis();
-						wifiHandlerLogger.error(
-							"Can't connect from saved credentials, status: %d.",
-							WiFi.status()
-						);
-						wifiHandlerLogger.debug(
-							"Trying saved credentials with PHY Mode G..."
-						);
-                        } else {
-						wifiHandlerLogger.debug(
-							"Skipping PHY Mode G attempt on 0-length SSID..."
-						);
-                        }
-                    #endif
                     wifiState = SLIME_WIFI_SAVED_G_ATTEMPT;
                 return;
 				case SLIME_WIFI_SAVED_G_ATTEMPT:  // Couldn't connect with first set of
 												  // credentials with PHY Mode G
                     #if defined(WIFI_CREDS_SSID) && defined(WIFI_CREDS_PASSWD)
                         // Try hardcoded credentials now
-                        #if ESP8266
-                            #if USE_ATTENUATION
-					WiFi.setOutputPower(20.0 - ATTENUATION_N);
-                            #endif
-                            WiFi.setPhyMode(WIFI_PHY_MODE_11N);
-                        #endif
                         setStaticIPIfDefined();
                         WiFi.begin(WIFI_CREDS_SSID, WIFI_CREDS_PASSWD);
                         wifiConnectionTimeout = millis();
@@ -237,51 +183,15 @@ void WiFiNetwork::upkeep() {
                 return;
 				case SLIME_WIFI_HARDCODE_ATTEMPT:  // Couldn't connect with second set
 												   // of credentials
-                    #if defined(WIFI_CREDS_SSID) && defined(WIFI_CREDS_PASSWD) && ESP8266
-												   // Try hardcoded credentials again,
-												   // but with PHY Mode G
-                        #if USE_ATTENUATION
-					WiFi.setOutputPower(20.0 - ATTENUATION_G);
-                        #endif
-                        WiFi.setPhyMode(WIFI_PHY_MODE_11G);
-                        setStaticIPIfDefined();
-                        WiFi.begin(WIFI_CREDS_SSID, WIFI_CREDS_PASSWD);
-                        wifiConnectionTimeout = millis();
-					wifiHandlerLogger.error(
-						"Can't connect from saved credentials, status: %d.",
-						WiFi.status()
-					);
-					wifiHandlerLogger.debug(
-						"Trying hardcoded credentials with WiFi PHY Mode G..."
-					);
-                    #endif
                     wifiState = SLIME_WIFI_HARDCODE_G_ATTEMPT;
                 return;
 				case SLIME_WIFI_SERVER_CRED_ATTEMPT:  // Couldn't connect with
 													  // server-sent credentials.
-                    #if ESP8266
-                        // Try again silently but with 11G
-                        #if USE_ATTENUATION
-					WiFi.setOutputPower(20.0 - ATTENUATION_G);
-                        #endif
-                        WiFi.setPhyMode(WIFI_PHY_MODE_11G);
-                        setStaticIPIfDefined();
-                        WiFi.begin();
-                        wifiConnectionTimeout = millis();
-                        wifiState = SLIME_WIFI_SERVER_CRED_G_ATTEMPT;
-                    #endif
                 return;
 				case SLIME_WIFI_HARDCODE_G_ATTEMPT:  // Couldn't connect with second set
 													 // of credentials with PHY Mode G.
 				case SLIME_WIFI_SERVER_CRED_G_ATTEMPT:  // Or if couldn't connect with
 														// server-sent credentials
-                    // Return to the default PHY Mode N.
-                    #if ESP8266
-                        #if USE_ATTENUATION
-					WiFi.setOutputPower(20.0 - ATTENUATION_N);
-                        #endif
-                        WiFi.setPhyMode(WIFI_PHY_MODE_11N);
-                    #endif
                     // Start smart config
 					if (!hadWifi && !WiFi.smartConfigDone()
 						&& wifiConnectionTimeout + 11000 < millis()) {

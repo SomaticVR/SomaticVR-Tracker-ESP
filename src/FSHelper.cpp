@@ -65,7 +65,6 @@ void forEachFile(const char* directory, std::function<void(File file)> callback)
 		return;
 	}
 
-#ifdef ESP32
 	auto dir = LittleFS.open(directory);
 	while (auto f = dir.openNextFile()) {
 		if (f.isDirectory()) {
@@ -76,17 +75,6 @@ void forEachFile(const char* directory, std::function<void(File file)> callback)
 	}
 
 	dir.close();
-#else
-	auto dir = LittleFS.openDir(directory);
-	while (dir.next()) {
-		auto fd = dir.openFile("r");
-		if (!fd.isFile()) {
-			continue;
-		}
-
-		callback(File(fd));
-	}
-#endif
 }
 }  // namespace Utils
 }  // namespace SlimeVR

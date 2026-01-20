@@ -36,13 +36,7 @@ namespace SlimeVR
 {
     void LEDManager::setup()
     {
-#if ENABLE_LEDS
-#if ESP32 && ENABLE_LEDC
-        ledcAttach(m_Pin, m_ledcFrequency, m_ledcBits);  // define the PWM Setup
-#else
-        pinMode(m_Pin, OUTPUT);
-#endif
-#endif
+        ledcAttachChannel(m_Pin, m_ledcFrequency, m_ledcBits, 5);  // define the PWM Setup
 
         // Do the initial pull of the state
         update();
@@ -50,24 +44,12 @@ namespace SlimeVR
 
     void LEDManager::on()
     {
-#if ENABLE_LEDS
-#if ESP32 && ENABLE_LEDC
         setBrightness((unsigned int) LEDC_MAX);
-#else
-        digitalWrite(m_Pin, LED__ON);
-#endif
-#endif
     }
 
     void LEDManager::off()
     {
-#if ENABLE_LEDS
-#if ESP32 && ENABLE_LEDC
         setBrightness((unsigned int)0);
-#else
-        digitalWrite(m_Pin, LED__OFF);
-#endif
-#endif
     }
 
     void LEDManager::blink(unsigned long time)
@@ -86,7 +68,6 @@ namespace SlimeVR
         }
     }
 
-#if ESP32 && ENABLE_LEDC
     void LEDManager::setBrightness(float percent)
     {        
         setBrightness( (unsigned int)(percent/100.0f * LEDC_MAX));
@@ -99,13 +80,8 @@ namespace SlimeVR
         if (brightness == m_CurrentBrightness)
             return;
         m_CurrentBrightness = brightness;
-#if LED_INVERTED
         // m_Logger.trace("Brightness set to %d. max is %d", LEDC_MAX - brightness, LEDC_MAX);
-        ledcWrite(m_Pin, LEDC_MAX - brightness * MAX_BRIGHTNESS);
-#else
-        // m_Logger.trace("Brightness set to %d. max is %d", brightness, LEDC_MAX);
-        ledcWrite(m_Pin, brightness * MAX_BRIGHTNESS);
-#endif        
+        ledcWrite(m_Pin, LEDC_MAX - brightness * MAX_BRIGHTNESS);     
     }
 
     void LEDManager::setRamp(float startPercent, float endPercent, unsigned long ms)
@@ -135,7 +111,6 @@ namespace SlimeVR
     {
         setRamp(m_CurrentBrightness, endBrightness, ms);
     }
-#endif
 
     void LEDManager::update()
     {
@@ -183,17 +158,14 @@ namespace SlimeVR
             case INTERVAL:
             case RAMP:
             case RAMP_CONTINUOUS:
-#if ESP32 && ENABLE_LEDC
                 rampFromCurrent(50.0f, 1000);
                 length = LED_RAMP_MILLIS;
-#endif
                 break;
             }
         }
         else if (statusManager.hasStatus(Status::BATTERY_CHARGING))
         {
             // m_Logger.info("Battery Charging: %d", m_CurrentStage);
-#if ESP32 && ENABLE_LEDC 
             switch (m_CurrentStage)
             {
             case ON:
@@ -207,7 +179,6 @@ namespace SlimeVR
                 length = LED_RAMP_MILLIS;
                 break;
             }
-#endif
         }
         else if (statusManager.hasStatus(Status::LOW_BATTERY))
         {
@@ -297,28 +268,6 @@ namespace SlimeVR
                 break;
             }
         }
-        // else if (statusManager.hasStatus(Status::SERVER_SEARCHING))
-        // {
-        //     count = SERVER_SEARCHING_COUNT;
-        //     switch (m_CurrentStage)
-        //     {
-        //     case ON:
-        //     case OFF:
-        //         length = SERVER_SEARCHING_LENGTH;
-        //         break;
-        //     case GAP:
-        //         length = DEFAULT_GAP;
-        //         break;
-        //     case INTERVAL:
-        //         length = SERVER_SEARCHING_INTERVAL;
-        //         break;
-        //     case RAMP:
-        //     case RAMP_CONTINUOUS:
-        //         m_CurrentStage = RAMP;
-        //         rampFromCurrent(0.0f,500);
-        //         break;
-        //     }
-        // }
         else
         {
 #if defined(LED_INTERVAL_STANDBY) && LED_INTERVAL_STANDBY > 0
@@ -378,7 +327,6 @@ namespace SlimeVR
                 m_CurrentStage = ON;
                 break;
             case RAMP:
-#if ESP32 && ENABLE_LEDC
                 // m_Logger.trace("RAMP: %d, %d, %d, %d", m_CurrentBrightness, m_rampDifference, m_rampStartBrightness, m_rampEndBrightness);
                 setBrightness(m_CurrentBrightness + m_rampDifference);
                 if (((m_rampDifference > 0) && (m_CurrentBrightness >= m_rampEndBrightness)) || 
@@ -396,7 +344,6 @@ namespace SlimeVR
                     m_rampEndBrightness = temp;
                     m_rampDifference = - m_rampDifference;
                 }
-#endif
                 break;
             }
         }

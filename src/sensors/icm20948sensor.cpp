@@ -169,18 +169,8 @@ void ICM20948Sensor::startCalibrationAutoSave() {
 }
 
 void ICM20948Sensor::startDMP() {
-#ifdef ESP32
-#if ESP32C3
 #define ICM20948_ODRGYR 1
 #define ICM20948_ODRAXL 1
-#else
-#define ICM20948_ODRGYR 1
-#define ICM20948_ODRAXL 1
-#endif
-#else
-#define ICM20948_ODRGYR 1
-#define ICM20948_ODRAXL 1
-#endif
 
 	if (imu.initializeDMP() == ICM_20948_Stat_Ok) {
 		m_Logger.debug("DMP initialized");
