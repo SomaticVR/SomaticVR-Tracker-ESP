@@ -26,7 +26,7 @@
 #include "status/Status.h"
 
 #define SHUTDOWN_BUTTON_COUNT 100
-#define FULL_OFF_BUTTON_COUNT 500
+#define FULL_OFF_BUTTON_COUNT 1000
 
 namespace SlimeVR
 {

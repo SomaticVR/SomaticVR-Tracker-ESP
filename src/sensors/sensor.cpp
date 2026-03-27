@@ -33,7 +33,6 @@ SensorStatus Sensor::getSensorState() {
 
 void Sensor::setAcceleration(Vector3 a) {
 	acceleration = a;
-	sensorOffset.sandwich(acceleration);
 	newAcceleration = true;
 }
 
@@ -91,9 +90,9 @@ void Sensor::resetTemperatureCalibrationState() {
 	printTemperatureCalibrationUnsupported();
 };
 
+const char* Sensor::getAttachedMagnetometer() const { return nullptr; }
+
 SlimeVR::Configuration::SensorConfigBits Sensor::getSensorConfigData() {
-	SlimeVR::Configuration::SensorConfig sensorConfig
-		= configuration.getSensor(sensorId);
 	return SlimeVR::Configuration::SensorConfigBits{
 		.magEnabled = toggles.getToggle(SensorToggles::MagEnabled),
 		.magSupported = isFlagSupported(SensorToggles::MagEnabled),
@@ -142,6 +141,8 @@ const char* getIMUNameByType(SensorTypeID imuType) {
 			return "ICM45686";
 		case SensorTypeID::ICM45605:
 			return "ICM45605";
+		case SensorTypeID::ADC_RESISTANCE:
+			return "ADC Resistance";
 		case SensorTypeID::Unknown:
 		case SensorTypeID::Empty:
 			return "UNKNOWN";
@@ -157,12 +158,16 @@ void Sensor::markRestCalibrationComplete(bool completed) {
 }
 
 void Sensor::setFlag(SensorToggles toggle, bool state) {
-	assert(isFlagSupported(toggle));
+	if (!isFlagSupported(toggle)) {
+		m_Logger.error(
+			"Toggle %s isn't supported by this sensor!",
+			SensorToggleState::toggleToString(toggle)
+		);
+		return;
+	}
 
 	toggles.setToggle(toggle, state);
 
 	configuration.setSensorToggles(sensorId, toggles);
 	configuration.save();
-
-	motionSetup();
 }

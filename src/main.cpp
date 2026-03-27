@@ -25,6 +25,7 @@
 
 #include "GlobalVars.h"
 #include "Wire.h"
+#include "ButtonMonitor.h"
 #include "batterymonitor.h"
 #include "credentials.h"
 #include "debugging/TimeTaken.h"
@@ -33,25 +34,30 @@
 #include "ota.h"
 #include "serial/serialcommands.h"
 #include "status/TPSCounter.h"
-#include "ButtonMonitor.h"
-#include "batterymonitor.h"
 #include "ChargerMonitor.h"
 #include "USBPDMonitor.h"
 
 Timer<> globalTimer;
 SlimeVR::Logging::Logger logger("SlimeVR");
 SlimeVR::Sensors::SensorManager sensorManager;
-SlimeVR::LEDManager ledManager(LED_PIN);
+SlimeVR::LEDManager ledManager;
 #ifdef PIN_BUTTON_INPUT
 SlimeVR::ButtonMonitor buttonMonitor(PIN_BUTTON_INPUT);
 #endif
+
 SlimeVR::Status::StatusManager statusManager;
 SlimeVR::Configuration::Configuration configuration;
 SlimeVR::Network::Manager networkManager;
 SlimeVR::Network::Connection networkConnection;
+SlimeVR::WiFiNetwork wifiNetwork;
+SlimeVR::WifiProvisioning wifiProvisioning;
 
+#ifdef PIN_USB_PD_INT
 SlimeVR::USBPDMonitor usbPDMonitor(0x22, PIN_USB_PD_INT);
+#endif 
+#ifdef PIN_CHARGER_INT
 SlimeVR::ChargerMonitor chargerMonitor(PIN_CHARGER_INT);
+#endif
 
 #if DEBUG_MEASURE_SENSOR_TIME_TAKEN
 SlimeVR::Debugging::TimeTakenMeasurer sensorMeasurer{"Sensors"};
@@ -67,8 +73,7 @@ BatteryMonitor battery;
 TPSCounter tpsCounter;
 
 void setup() {
-    // For Somatic Eros, pull ENABLE_LATCH high first thing if the button is pressed,
-	//   so the button doesn't need to be held down any longer.
+    // For Somatic Orion, pull ENABLE_LATCH high first thing, so the button doesn't need to be held down any longer.
 #ifdef PIN_BUTTON_INPUT
 	buttonMonitor.setup();
 #endif
@@ -79,6 +84,8 @@ void setup() {
 #ifdef PIN_IMU_ENABLE
     pinMode(PIN_IMU_ENABLE, OUTPUT);
     digitalWrite(PIN_IMU_ENABLE, LOW);
+    delay(200);
+    digitalWrite(PIN_IMU_ENABLE, HIGH);
 #endif
 #ifdef PIN_BAT_STAT_CHRG
     pinMode(PIN_BAT_STAT_CHRG, INPUT);
@@ -86,21 +93,20 @@ void setup() {
 #ifdef PIN_BAT_STAT_CHRG_DONE
     pinMode(PIN_BAT_STAT_CHRG_DONE, INPUT);
 #endif
+
 #ifdef PIN_TACT_MOTOR
     pinMode(PIN_TACT_MOTOR, OUTPUT);
     digitalWrite(PIN_TACT_MOTOR, buttonMonitor.isPressed()?HIGH:LOW);
 #endif
-#ifdef ESP32C3
-    // Wait for the Computer to be able to connect.
-    delay(1000);
 #ifdef PIN_TACT_MOTOR
-    digitalWrite(PIN_TACT_MOTOR, LOW);
-#endif
-    delay(1000);
+	if (digitalRead(PIN_TACT_MOTOR) == HIGH) {
+		delay(1000);
+		digitalWrite(PIN_TACT_MOTOR, LOW);
+	}
 #endif
 
-	Serial.begin(serialBaudRate);
-	globalTimer = timer_create_default();
+    Serial.begin(serialBaudRate);
+    globalTimer = timer_create_default();
 
 	Serial.println();
 	Serial.println();
@@ -108,9 +114,42 @@ void setup() {
 
 	logger.info("SlimeVR v" FIRMWARE_VERSION " starting up...");
 
+	char vendorBuffer[512];
+	size_t writtenLength;
+
+	if (strlen(VENDOR_URL) == 0) {
+		sprintf(
+			vendorBuffer,
+			"Vendor: %s, product: %s%n",
+			VENDOR_NAME,
+			PRODUCT_NAME,
+			&writtenLength
+		);
+	} else {
+		sprintf(
+			vendorBuffer,
+			"Vendor: %s (%s), product: %s%n",
+			VENDOR_NAME,
+			VENDOR_URL,
+			PRODUCT_NAME,
+			&writtenLength
+		);
+	}
+
+	if (strlen(UPDATE_ADDRESS) > 0 && strlen(UPDATE_NAME) > 0) {
+		sprintf(
+			vendorBuffer + writtenLength,
+			", firmware update url: %s, name: %s",
+			UPDATE_ADDRESS,
+			UPDATE_NAME
+		);
+	}
+	logger.info("%s", vendorBuffer);
+
 	statusManager.setStatus(SlimeVR::Status::LOADING, true);
 
 	ledManager.setup();
+    ledManager.on();
 	configuration.setup();
 
 	SerialCommands::setUp();
@@ -125,7 +164,7 @@ void setup() {
 
 	// join I2C bus
 
-#if ESP32
+#ifdef ESP32
 	// For some unknown reason the I2C seem to be open on ESP32-C3 by default. Let's
 	// just close it before opening it again. (The ESP32-C3 only has 1 I2C.)
 	Wire.end();
@@ -182,7 +221,7 @@ void loop() {
 
 	battery.Loop();
 #ifdef PIN_BUTTON_INPUT
-	buttonMonitor.update();
+    buttonMonitor.update();
 #endif
 	ledManager.update();
 	I2CSCAN::update();

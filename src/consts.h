@@ -58,7 +58,7 @@ enum class SensorTypeID : uint8_t {
 #define IMU_BNO055 BNO055Sensor
 #define IMU_MPU6050 MPU6050Sensor
 #define IMU_BNO086 BNO086Sensor
-#define IMU_BMI160 BMI160Sensor
+#define IMU_BMI160 SoftFusionBMI160
 #define IMU_ICM20948 ICM20948Sensor
 #define IMU_ICM42688 SoftFusionICM42688
 #define IMU_BMI270 SoftFusionBMI270
@@ -95,7 +95,8 @@ enum class SensorTypeID : uint8_t {
 #define BOARD_GLOVE_IMU_SLIMEVR_DEV 20  // IMU Glove
 #define BOARD_GESTURES 21  // Used by Gestures
 #define BOARD_SLIMEVR_V1_2 22  // SlimeVR v1.2
-#define BOARD_SOMATIC_EROS 23  // Somatic Eros
+#define BOARD_ESP32S3_SUPERMINI 23
+#define BOARD_SOMATICVR_ORION 24
 #define BOARD_DEV_RESERVED 250  // Reserved, should not be used in any release firmware
 
 #define BAT_EXTERNAL 1
@@ -103,7 +104,7 @@ enum class SensorTypeID : uint8_t {
 #define BAT_MCP3021 3
 #define BAT_INTERNAL_MCP3021 4
 
-#define LED_OFF 255
+#define LED_PIN_NONE 255
 
 #define POWER_SAVING_LEGACY 0  // No sleeping, but PS enabled
 #define POWER_SAVING_NONE 1  // No sleeping, no PS => for connection issues

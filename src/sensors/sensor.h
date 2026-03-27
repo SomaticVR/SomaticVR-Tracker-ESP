@@ -57,14 +57,14 @@ public:
 		SensorTypeID type,
 		uint8_t id,
 		SlimeVR::Sensors::RegisterInterface& registerInterface,
-		float rotation,
+		Quat rotation,
 		SlimeVR::SensorInterface* sensorInterface = nullptr
 	)
 		: m_hwInterface(sensorInterface)
 		, m_RegisterInterface(registerInterface)
 		, sensorId(id)
 		, sensorType(type)
-		, sensorOffset({Quat(Vector3(0, 1, 0), rotation)})
+		, sensorOffset(rotation)
 		, m_Logger(SlimeVR::Logging::Logger(sensorName)) {
 		char buf[4];
 		sprintf(buf, "%u", id);
@@ -85,6 +85,11 @@ public:
 	virtual void printDebugTemperatureCalibrationState();
 	virtual void resetTemperatureCalibrationState();
 	virtual void saveTemperatureCalibration();
+	// TODO: currently only for softfusionsensor, bmi160 and others should get
+	// an overload too
+	virtual const char* getAttachedMagnetometer() const;
+	// TODO: realistically each sensor should print its own state instead of
+	// having 15 getters for things only the serial commands use
 	bool isWorking() { return working; };
 	bool getHadData() const { return hadData; };
 	bool isValid() { return m_hwInterface != nullptr; };
@@ -122,6 +127,10 @@ protected:
 	bool working = false;
 	bool hadData = false;
 	uint8_t calibrationAccuracy = 0;
+	/**
+	 * Apply sensor offset to align it with tracker's axises
+	 * (Y to top of the tracker, Z to front, X to left)
+	 */
 	Quat sensorOffset;
 
 	bool newFusedRotation = false;

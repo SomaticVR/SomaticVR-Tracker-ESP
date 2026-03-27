@@ -31,7 +31,7 @@ namespace SlimeVR::Sensors {
 class ErroneousSensor : public Sensor {
 public:
 	ErroneousSensor(uint8_t id, SensorTypeID type)
-		: Sensor("ErroneousSensor", type, id, EmptyRegisterInterface::instance, 0.0)
+		: Sensor("ErroneousSensor", type, id, EmptyRegisterInterface::instance, Quat(1, 0, 0, 0))
 		, m_ExpectedType(type){};
 	~ErroneousSensor(){};
 

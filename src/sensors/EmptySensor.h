@@ -36,7 +36,7 @@ public:
 			SensorTypeID::Empty,
 			id,
 			EmptyRegisterInterface::instance,
-			0.0
+			Quat(1, 0, 0, 0)
 		){};
 	~EmptySensor(){};
 

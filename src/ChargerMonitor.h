@@ -26,7 +26,7 @@
 #include "globals.h"
 #include "logging/Logger.h"
 
-#define POWERTESTSTARTUPTIME 32000
+#define POWERTESTSTARTUPTIME 5000
 
 namespace SlimeVR
 {

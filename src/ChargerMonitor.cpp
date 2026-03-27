@@ -31,6 +31,7 @@ namespace SlimeVR
     {
         m_Logger.info("Setting up Charger interface...");
         pinMode(m_Pin, INPUT_PULLUP);
+        pinMode(PIN_CHRG_DONE, OUTPUT);
 
         if (!PMIC.begin()) 
         {

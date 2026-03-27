@@ -24,17 +24,16 @@
 
 #include "GlobalVars.h"
 
-namespace SlimeVR {
-namespace Network {
+namespace SlimeVR::Network {
 
-void Manager::setup() { ::WiFiNetwork::setUp(); }
+void Manager::setup() { wifiNetwork.setUp(); }
 
 void Manager::update() {
-	WiFiNetwork::upkeep();
+	wifiNetwork.upkeep();
 
 	auto wasConnected = m_IsConnected;
 
-	m_IsConnected = ::WiFiNetwork::isConnected();
+	m_IsConnected = wifiNetwork.isConnected();
 
 	if (!m_IsConnected) {
 		return;
@@ -48,5 +47,4 @@ void Manager::update() {
 	networkConnection.update();
 }
 
-}  // namespace Network
-}  // namespace SlimeVR
+}  // namespace SlimeVR::Network
