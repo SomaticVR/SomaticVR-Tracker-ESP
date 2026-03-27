@@ -27,12 +27,13 @@
 #include <arduino-timer.h>
 
 #include "LEDManager.h"
+#include "batterymonitor.h"
 #include "configuration/Configuration.h"
 #include "network/connection.h"
 #include "network/manager.h"
 #include "sensors/SensorManager.h"
 #include "status/StatusManager.h"
-#include "batterymonitor.h"
+#include "ChargerMonitor.h"
 
 extern Timer<> globalTimer;
 extern SlimeVR::LEDManager ledManager;
@@ -42,5 +43,6 @@ extern SlimeVR::Sensors::SensorManager sensorManager;
 extern SlimeVR::Network::Manager networkManager;
 extern SlimeVR::Network::Connection networkConnection;
 extern BatteryMonitor battery;
+extern SlimeVR::ChargerMonitor chargerMonitor;
 
 #endif

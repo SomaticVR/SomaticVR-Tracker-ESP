@@ -24,6 +24,7 @@
 #define SLIMEVR_LEDMANAGER_H
 
 #include <Arduino.h>
+
 #include "globals.h"
 #include "logging/Logger.h"
 
@@ -31,7 +32,7 @@
 #define DEFAULT_GAP 500
 #define DEFAULT_INTERVAL 3000
 
-#define STANDBUY_LENGTH DEFAULT_LENGTH
+#define STANDBY_LENGTH DEFAULT_LENGTH
 #define IMU_ERROR_LENGTH DEFAULT_LENGTH
 #define IMU_ERROR_INTERVAL 1000
 #define IMU_ERROR_COUNT 5
@@ -44,6 +45,14 @@
 #define SERVER_CONNECTING_LENGTH DEFAULT_LENGTH
 #define SERVER_CONNECTING_INTERVAL 3000
 #define SERVER_CONNECTING_COUNT 2
+#define SERVER_SEARCHING_LENGTH 20
+#define SERVER_SEARCHING_INTERVAL 1000
+#define SERVER_SEARCHING_COUNT 1
+#define SHUTDOWN_LENGTH 150
+#define SHUTDOWN_INTERVAL 150
+#define SHUTDOWN_COUNT 1
+
+#define ENABLE_LEDC true
 
 namespace SlimeVR
 {
@@ -52,14 +61,20 @@ namespace SlimeVR
         OFF,
         ON,
         GAP,
-        INTERVAL
+        INTERVAL,
+        RAMP,
+        RAMP_CONTINUOUS
     };
 
     class LEDManager
     {
     public:
+#if ESP32 && ENABLE_LEDC     
+        LEDManager(uint8_t pin, int ledcFrequency = 5000, uint8_t ledcBits = 12) : 
+                            m_Pin(pin), m_ledcFrequency(ledcFrequency), m_ledcBits(ledcBits), m_CurrentBrightness(0) {}
+#else
         LEDManager(uint8_t pin) : m_Pin(pin) {}
-
+#endif
         void setup();
 
         /*!
@@ -71,7 +86,14 @@ namespace SlimeVR
          *  @brief Turns the LED off
          */
         void off();
-
+#if ESP32 && ENABLE_LEDC
+        void setBrightness(float percent);
+        void setBrightness(unsigned int brightness);
+        void setRamp(float startPercent, float endPercent, unsigned long ms);
+        void setRamp(unsigned int startBrightness, unsigned int endBrightness, unsigned long ms);
+        void rampFromCurrent(float endPercent, unsigned long ms);
+        void rampFromCurrent(unsigned int endBrightness, unsigned long ms);        
+#endif
         /*!
          *  @brief Blink the LED for [time]ms. *Can* cause lag
          *  @param time Amount of ms to turn the LED on
@@ -95,7 +117,15 @@ namespace SlimeVR
         unsigned long m_LastUpdate = millis();
 
         uint8_t m_Pin;
-
+        uint32_t m_LastStatus = 0;
+#if ESP32 && ENABLE_LEDC
+        int m_ledcFrequency;
+        uint8_t m_ledcBits;
+        int m_rampDifference;
+        unsigned int m_CurrentBrightness;
+        unsigned int m_rampStartBrightness;
+        unsigned int m_rampEndBrightness;
+#endif 
         Logging::Logger m_Logger = Logging::Logger("LEDManager");
     };
 }
