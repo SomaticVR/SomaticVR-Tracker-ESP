@@ -37,7 +37,7 @@ public:
 	MPU6050Sensor(
 		uint8_t id,
 		SlimeVR::Sensors::RegisterInterface& registerInterface,
-		float rotation,
+		Quat rotation,
 		SlimeVR::SensorInterface* sensorInterface,
 		PinInterface*,
 		uint8_t

@@ -44,6 +44,12 @@ void BatteryMonitor::Setup() {
 }
 
 void BatteryMonitor::Loop() {
+#ifdef PIN_BAT_STAT_CHRG
+	statusManager.setStatus(SlimeVR::Status::BATTERY_CHARGING, digitalRead(PIN_BAT_STAT_CHRG) != HIGH);
+#endif
+#ifdef PIN_BAT_STAT_CHRG_DONE
+	statusManager.setStatus(SlimeVR::Status::BATTERY_CHARGE_COMPLETE, digitalRead(PIN_BAT_STAT_CHRG_DONE) != HIGH);
+#endif    
 #if BATTERY_MONITOR == BAT_EXTERNAL || BATTERY_MONITOR == BAT_INTERNAL \
 	|| BATTERY_MONITOR == BAT_MCP3021 || BATTERY_MONITOR == BAT_INTERNAL_MCP3021
 	auto now_ms = millis();
@@ -74,7 +80,7 @@ void BatteryMonitor::Loop() {
 		voltage = ((float)analogRead(PIN_BATTERY_LEVEL)) * ADCVoltageMax / ADCResolution
 				* ADCMultiplier;
 #endif
-#if ESP32 && BATTERY_MONITOR == BAT_EXTERNAL
+#if defined(ESP32) && BATTERY_MONITOR == BAT_EXTERNAL
 		voltage
 			= ((float)analogReadMilliVolts(PIN_BATTERY_LEVEL)) / 1000 * ADCMultiplier;
 #endif

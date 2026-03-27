@@ -42,7 +42,7 @@ public:
 			SensorTypeID::ADC_RESISTANCE,
 			id,
 			EmptyRegisterInterface::instance,
-			0.0f,
+			Quat(1, 0, 0, 0),
 			new SlimeVR::EmptySensorInterface
 		)
 		, m_Pin(pin)
