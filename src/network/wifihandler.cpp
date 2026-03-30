@@ -140,9 +140,7 @@ void WiFiNetwork::setUp() {
 		esp_wifi_set_config(WIFI_IF_STA, &conf);
 		WiFi.setSleep(WIFI_PS_MAX_MODEM);
 	} else {
-		wifiHandlerLogger.error(
-			"Unable to get WiFi config, power saving not enabled!"
-		);
+		wifiHandlerLogger.error("Unable to get WiFi config, power saving not enabled!");
 	}
 #endif
 #endif
@@ -184,9 +182,7 @@ String WiFiNetwork::getPassword() {
 #endif
 }
 
-WiFiNetwork::WiFiReconnectionStatus WiFiNetwork::getWiFiState() {
-	return wifiState;
-}
+WiFiNetwork::WiFiReconnectionStatus WiFiNetwork::getWiFiState() { return wifiState; }
 
 void WiFiNetwork::upkeep() {
 	wifiProvisioning.upkeepProvisioning();
@@ -296,9 +292,7 @@ const char* WiFiNetwork::statusToReasonString(wl_status_t status) {
 	}
 }
 
-WiFiNetwork::WiFiFailureReason WiFiNetwork::statusToFailure(
-	wl_status_t status
-) {
+WiFiNetwork::WiFiFailureReason WiFiNetwork::statusToFailure(wl_status_t status) {
 	switch (status) {
 		case WL_DISCONNECTED:
 			return WiFiFailureReason::Timeout;
@@ -328,8 +322,7 @@ void WiFiNetwork::showConnectionAttemptFailed(const char* type) const {
 
 bool WiFiNetwork::trySavedCredentials() {
 	if (getSSID().length() == 0) {
-		wifiHandlerLogger.debug(
-			"Skipping saved credentials attempt on 0-length SSID..."
+		wifiHandlerLogger.debug("Skipping saved credentials attempt on 0-length SSID..."
 		);
 		wifiState = WiFiReconnectionStatus::HardcodeAttempt;
 		return false;
@@ -371,9 +364,7 @@ bool WiFiNetwork::tryHardcodedCredentials() {
 		}
 
 		retriedOnG = true;
-		wifiHandlerLogger.debug(
-			"Trying hardcoded credentials with PHY Mode G..."
-		);
+		wifiHandlerLogger.debug("Trying hardcoded credentials with PHY Mode G...");
 		// Don't need to save hardcoded credentials
 		WiFi.persistent(false);
 		auto result = tryConnecting(true, WIFI_CREDS_SSID, WIFI_CREDS_PASSWD);
@@ -409,11 +400,7 @@ bool WiFiNetwork::tryServerCredentials() {
 	return tryConnecting(true);
 }
 
-bool WiFiNetwork::tryConnecting(
-	bool phyModeG,
-	const char* SSID,
-	const char* pass
-) {
+bool WiFiNetwork::tryConnecting(bool phyModeG, const char* SSID, const char* pass) {
 #if ESP8266
 	if (phyModeG) {
 		WiFi.setPhyMode(WIFI_PHY_MODE_11G);

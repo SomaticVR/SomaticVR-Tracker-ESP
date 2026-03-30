@@ -85,10 +85,8 @@ bool lengthCheck(
 	return true;
 }
 
-unsigned int decode_base64_length_null(
-	const char* const b64char,
-	unsigned int* b64ssidlength
-) {
+unsigned int
+decode_base64_length_null(const char* const b64char, unsigned int* b64ssidlength) {
 	if (b64char == NULL) {
 		return 0;
 	}
@@ -112,9 +110,7 @@ void cmdSet(CmdParser* parser) {
 				}
 
 				wifiNetwork.setWiFiCredentials(sc_ssid, sc_pw);
-				logger.info(
-					"CMD SET WIFI OK: New wifi credentials set, reconnecting"
-				);
+				logger.info("CMD SET WIFI OK: New wifi credentials set, reconnecting");
 			}
 		} else if (parser->equalCmdParam(1, "BWIFI")) {
 			if (parser->getParamCount() < 3) {
@@ -160,9 +156,7 @@ void cmdSet(CmdParser* parser) {
 					ppass = NULL;
 				}
 				wifiNetwork.setWiFiCredentials(ssid, ppass);
-				logger.info(
-					"CMD SET BWIFI OK: New wifi credentials set, reconnecting"
-				);
+				logger.info("CMD SET BWIFI OK: New wifi credentials set, reconnecting");
 			}
 		} else {
 			logger.error("CMD SET ERROR: Unrecognized variable to set");
@@ -413,9 +407,7 @@ void cmdFactoryReset(CmdParser* parser) {
 
 #if defined(WIFI_CREDS_SSID) && defined(WIFI_CREDS_PASSWD)
 #warning FACTORY RESET does not clear your hardcoded WiFi credentials!
-	logger.warn(
-		"FACTORY RESET does not clear your hardcoded WiFi credentials!"
-	);
+	logger.warn("FACTORY RESET does not clear your hardcoded WiFi credentials!");
 #endif
 
 	delay(3000);
@@ -458,8 +450,7 @@ void cmdTemperatureCalibration(CmdParser* parser) {
 		"delete "
 		"already saved)"
 	);
-	logger.info(
-		"  TCAL SAVE: save current temperature calibration to persistent flash"
+	logger.info("  TCAL SAVE: save current temperature calibration to persistent flash"
 	);
 	logger.info("Note:");
 	logger.info(
@@ -494,7 +485,5 @@ void setUp() {
 #endif
 }
 
-void update() {
-	cmdCallbacks.updateCmdProcessing(&cmdParser, &cmdBuffer, &Serial);
-}
+void update() { cmdCallbacks.updateCmdProcessing(&cmdParser, &cmdBuffer, &Serial); }
 }  // namespace SerialCommands

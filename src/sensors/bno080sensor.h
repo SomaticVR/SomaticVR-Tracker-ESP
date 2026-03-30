@@ -46,15 +46,15 @@ public:
 		int
 	)
 		: Sensor(
-			"BNO080Sensor",
-			SensorTypeID::BNO080,
-			id,
-			registerInterface,
-			rotation,
-			sensorInterface
-		)
-		, m_IntPin(intPin){};
-	~BNO080Sensor(){};
+			  "BNO080Sensor",
+			  SensorTypeID::BNO080,
+			  id,
+			  registerInterface,
+			  rotation,
+			  sensorInterface
+		  )
+		, m_IntPin(intPin) {};
+	~BNO080Sensor() {};
 	void motionSetup() override final;
 	void postSetup() override { lastData = millis(); }
 
@@ -85,7 +85,7 @@ protected:
 		int
 	)
 		: Sensor(sensorName, imuId, id, registerInterface, rotation, sensorInterface)
-		, m_IntPin(intPin){};
+		, m_IntPin(intPin) {};
 
 private:
 	BNO080 imu{};
@@ -123,15 +123,15 @@ public:
 		int extraParam
 	)
 		: BNO080Sensor(
-			"BNO085Sensor",
-			SensorTypeID::BNO085,
-			id,
-			registerInterface,
-			rotation,
-			sensorInterface,
-			intPin,
-			extraParam
-		){};
+			  "BNO085Sensor",
+			  SensorTypeID::BNO085,
+			  id,
+			  registerInterface,
+			  rotation,
+			  sensorInterface,
+			  intPin,
+			  extraParam
+		  ) {};
 };
 
 class BNO086Sensor : public BNO080Sensor {
@@ -146,15 +146,15 @@ public:
 		int extraParam
 	)
 		: BNO080Sensor(
-			"BNO086Sensor",
-			SensorTypeID::BNO086,
-			id,
-			registerInterface,
-			rotation,
-			sensorInterface,
-			intPin,
-			extraParam
-		){};
+			  "BNO086Sensor",
+			  SensorTypeID::BNO086,
+			  id,
+			  registerInterface,
+			  rotation,
+			  sensorInterface,
+			  intPin,
+			  extraParam
+		  ) {};
 };
 
 #endif

@@ -90,9 +90,7 @@ bool Connection::endPacket() {
 }
 
 bool Connection::beginBundle() {
-	MUST_TRANSFER_BOOL(
-		m_ServerFeatures.has(ServerFeatures::PROTOCOL_BUNDLE_SUPPORT)
-	);
+	MUST_TRANSFER_BOOL(m_ServerFeatures.has(ServerFeatures::PROTOCOL_BUNDLE_SUPPORT));
 	MUST_TRANSFER_BOOL(m_Connected);
 	MUST_TRANSFER_BOOL(!m_IsBundle);
 	MUST_TRANSFER_BOOL(beginPacket());
@@ -218,10 +216,7 @@ void Connection::sendSensorAcceleration(uint8_t sensorId, Vector3 vector) {
 }
 
 // PACKET_BATTERY_LEVEL 12
-void Connection::sendBatteryLevel(
-	float batteryVoltage,
-	float batteryPercentage
-) {
+void Connection::sendBatteryLevel(float batteryVoltage, float batteryPercentage) {
 	MUST(m_Connected);
 	MUST(sendPacket(
 		SendPacketType::BatteryLevel,
@@ -299,10 +294,7 @@ void Connection::sendRotationData(
 }
 
 // PACKET_MAGNETOMETER_ACCURACY 18
-void Connection::sendMagnetometerAccuracy(
-	uint8_t sensorId,
-	float accuracyInfo
-) {
+void Connection::sendMagnetometerAccuracy(uint8_t sensorId, float accuracyInfo) {
 	MUST(m_Connected);
 	MUST(sendPacket(
 		SendPacketType::MagnetometerAccuracy,
@@ -341,10 +333,7 @@ void Connection::sendTemperature(uint8_t sensorId, float temperature) {
 void Connection::sendFeatureFlags() {
 	MUST(m_Connected);
 	sendPacketCallback(SendPacketType::FeatureFlags, [&]() {
-		return write(
-			FirmwareFeatures::flags.data(),
-			FirmwareFeatures::flags.size()
-		);
+		return write(FirmwareFeatures::flags.data(), FirmwareFeatures::flags.size());
 	});
 }
 
@@ -376,8 +365,7 @@ void Connection::sendTrackerDiscovery() {
 			// This is kept for backwards compatibility,
 			// but the latest SlimeVR server will not initialize trackers
 			// with firmware build > 8 until it recieves a sensor info packet
-			MUST_TRANSFER_BOOL(
-				sendInt(static_cast<int>(sensorManager.getSensorType(0)))
+			MUST_TRANSFER_BOOL(sendInt(static_cast<int>(sensorManager.getSensorType(0)))
 			);
 			MUST_TRANSFER_BOOL(sendInt(HARDWARE_MCU));
 			// Backwards compatibility, unused IMU data
@@ -513,9 +501,7 @@ void Connection::returnLastPacket(int len) {
 	MUST(endPacket());
 }
 
-void Connection::updateSensorState(
-	std::vector<std::unique_ptr<Sensor>>& sensors
-) {
+void Connection::updateSensorState(std::vector<std::unique_ptr<Sensor>>& sensors) {
 	if (millis() - m_LastSensorInfoPacketTimestamp <= 1000) {
 		return;
 	}
@@ -545,8 +531,7 @@ void Connection::maybeRequestFeatureFlags() {
 
 bool Connection::isSensorStateUpdated(int i, std::unique_ptr<Sensor>& sensor) {
 	return (m_AckedSensorState[i] != sensor->getSensorState()
-			|| m_AckedSensorCalibration[i]
-				   != sensor->hasCompletedRestCalibration()
+			|| m_AckedSensorCalibration[i] != sensor->hasCompletedRestCalibration()
 			|| m_AckedSensorConfigData[i] != sensor->getSensorConfigData())
 		&& sensor->getSensorType() != SensorTypeID::Unknown
 		&& sensor->getSensorType() != SensorTypeID::Empty;
@@ -774,8 +759,7 @@ void Connection::update() {
 					if (len < 12) {
 						m_AckedSensorCalibration[i]
 							= sensors[i]->hasCompletedRestCalibration();
-						m_AckedSensorConfigData[i]
-							= sensors[i]->getSensorConfigData();
+						m_AckedSensorConfigData[i] = sensors[i]->getSensorConfigData();
 						break;
 					}
 					m_AckedSensorCalibration[i]
@@ -800,9 +784,7 @@ void Connection::update() {
 
 			if (!hadFlags) {
 #if PACKET_BUNDLING != PACKET_BUNDLING_DISABLED
-				if (m_ServerFeatures.has(
-						ServerFeatures::PROTOCOL_BUNDLE_SUPPORT
-					)) {
+				if (m_ServerFeatures.has(ServerFeatures::PROTOCOL_BUNDLE_SUPPORT)) {
 					m_Logger.debug("Server supports packet bundling");
 				}
 #endif
@@ -820,11 +802,7 @@ void Connection::update() {
 			}
 
 			SetConfigFlagPacket setConfigFlagPacket;
-			memcpy(
-				&setConfigFlagPacket,
-				m_Packet + 12,
-				sizeof(SetConfigFlagPacket)
-			);
+			memcpy(&setConfigFlagPacket, m_Packet + 12, sizeof(SetConfigFlagPacket));
 
 			uint8_t sensorId = setConfigFlagPacket.sensorId;
 			SensorToggles flag = setConfigFlagPacket.flag;
@@ -837,8 +815,7 @@ void Connection::update() {
 				auto& sensors = sensorManager.getSensors();
 
 				if (sensorId >= sensors.size()) {
-					m_Logger.warn(
-						"Invalid sensor config flag packet: invalid sensor id"
+					m_Logger.warn("Invalid sensor config flag packet: invalid sensor id"
 					);
 					break;
 				}
