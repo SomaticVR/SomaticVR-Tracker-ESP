@@ -544,6 +544,26 @@ void Connection::searchForServer() {
 			break;
 		}
 
+
+		// https://github.com/SlimeVR/SlimeVR-Tracker-ESP/issues/516 fix 
+		// from https://github.com/kounocom/SlimeVR-Tracker-ESP/commit/6e21ba0b0d7d719bb924deadef41a9e6d8fccb2d#diff-f9c2c74e084edc8f3bda0c3f9eb75959d82ef5da197cabed835b90c0e92f6524L547
+
+		#ifdef ESP32
+		if (packetSize > sizeof(m_Packet)) {
+			// ESP32 seemingly gets stuck when the packet is bigger than the buffer it has
+			// This only happens with packets not meant for it being incidentally received
+			// For compatibility we ignore these and flush the UDP buffer
+			m_UDP.flush();
+			while (packetSize > 0) {
+				packetSize -= m_UDP.read(m_Packet, std::min(sizeof(m_Packet), static_cast<size_t>(packetSize)));
+			}
+			continue;
+		}
+		#endif
+		
+		// end fix
+
+
 		// receive incoming UDP packets
 		[[maybe_unused]] int len = m_UDP.read(m_Packet, sizeof(m_Packet));
 
@@ -659,6 +679,27 @@ void Connection::update() {
 	if (!packetSize) {
 		return;
 	}
+
+
+
+	// https://github.com/SlimeVR/SlimeVR-Tracker-ESP/issues/516 fix 
+	// from https://github.com/kounocom/SlimeVR-Tracker-ESP/commit/6e21ba0b0d7d719bb924deadef41a9e6d8fccb2d#diff-f9c2c74e084edc8f3bda0c3f9eb75959d82ef5da197cabed835b90c0e92f6524L547
+
+	#ifdef ESP32
+	if (packetSize > sizeof(m_Packet)) {
+		// ESP32 seemingly gets stuck when the packet is bigger than the buffer it has
+		// This only happens with packets not meant for it being incidentally received
+		// For compatibility we ignore these and flush the UDP buffer
+		m_UDP.flush();
+		while (packetSize > 0) {
+			packetSize -= m_UDP.read(m_Packet, std::min(sizeof(m_Packet), static_cast<size_t>(packetSize)));
+		}
+		return;
+	}
+	#endif
+	
+	// end fix
+
 
 	m_LastPacketTimestamp = millis();
 	int len = m_UDP.read(m_Packet, sizeof(m_Packet));
