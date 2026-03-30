@@ -32,15 +32,15 @@
 #ifndef SECOND_IMU
 #define SECOND_IMU IMU_AUTO
 #endif
-//#ifndef BOARD
-#define BOARD BOARD_SOMATICVR_ORION 
-//#define BOARD BOARD_SLIMEVR_V1_2
-//#endif
+// #ifndef BOARD
+#define BOARD BOARD_SOMATICVR_ORION
+// #define BOARD BOARD_SLIMEVR_V1_2
+// #endif
 #ifndef IMU_ROTATION
-#define IMU_ROTATION Quat(Vector3(0,0,1), DEG_270)
+#define IMU_ROTATION Quat(Vector3(0, 0, 1), DEG_270)
 #endif
 #ifndef SECOND_IMU_ROTATION
-#define SECOND_IMU_ROTATION Quat(Vector3(0,0,1), DEG_270)
+#define SECOND_IMU_ROTATION Quat(Vector3(0, 0, 1), DEG_270)
 #endif
 
 #ifndef PRIMARY_IMU_OPTIONAL

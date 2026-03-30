@@ -23,9 +23,11 @@
 
 #include <i2cscan.h>
 
-#include "GlobalVars.h"
-#include "Wire.h"
 #include "ButtonMonitor.h"
+#include "ChargerMonitor.h"
+#include "GlobalVars.h"
+#include "USBPDMonitor.h"
+#include "Wire.h"
 #include "batterymonitor.h"
 #include "credentials.h"
 #include "debugging/TimeTaken.h"
@@ -34,8 +36,6 @@
 #include "ota.h"
 #include "serial/serialcommands.h"
 #include "status/TPSCounter.h"
-#include "ChargerMonitor.h"
-#include "USBPDMonitor.h"
 
 Timer<> globalTimer;
 SlimeVR::Logging::Logger logger("SlimeVR");
@@ -54,7 +54,7 @@ SlimeVR::WifiProvisioning wifiProvisioning;
 
 #ifdef PIN_USB_PD_INT
 SlimeVR::USBPDMonitor usbPDMonitor(0x22, PIN_USB_PD_INT);
-#endif 
+#endif
 #ifdef PIN_CHARGER_INT
 SlimeVR::ChargerMonitor chargerMonitor(PIN_CHARGER_INT);
 #endif
@@ -73,30 +73,31 @@ BatteryMonitor battery;
 TPSCounter tpsCounter;
 
 void setup() {
-    // For Somatic Orion, pull ENABLE_LATCH high first thing, so the button doesn't need to be held down any longer.
+	// For Somatic Orion, pull ENABLE_LATCH high first thing, so the button doesn't need
+	// to be held down any longer.
 #ifdef PIN_BUTTON_INPUT
 	buttonMonitor.setup();
 #endif
 #ifdef PIN_ENABLE_LATCH
-    pinMode(PIN_ENABLE_LATCH, OUTPUT);
-    digitalWrite(PIN_ENABLE_LATCH, buttonMonitor.isPressed()?HIGH:LOW);
+	pinMode(PIN_ENABLE_LATCH, OUTPUT);
+	digitalWrite(PIN_ENABLE_LATCH, buttonMonitor.isPressed() ? HIGH : LOW);
 #endif
 #ifdef PIN_IMU_ENABLE
-    pinMode(PIN_IMU_ENABLE, OUTPUT);
-    digitalWrite(PIN_IMU_ENABLE, LOW);
-    delay(200);
-    digitalWrite(PIN_IMU_ENABLE, HIGH);
+	pinMode(PIN_IMU_ENABLE, OUTPUT);
+	digitalWrite(PIN_IMU_ENABLE, LOW);
+	delay(200);
+	digitalWrite(PIN_IMU_ENABLE, HIGH);
 #endif
 #ifdef PIN_BAT_STAT_CHRG
-    pinMode(PIN_BAT_STAT_CHRG, INPUT);
+	pinMode(PIN_BAT_STAT_CHRG, INPUT);
 #endif
 #ifdef PIN_BAT_STAT_CHRG_DONE
-    pinMode(PIN_BAT_STAT_CHRG_DONE, INPUT);
+	pinMode(PIN_BAT_STAT_CHRG_DONE, INPUT);
 #endif
 
 #ifdef PIN_TACT_MOTOR
-    pinMode(PIN_TACT_MOTOR, OUTPUT);
-    digitalWrite(PIN_TACT_MOTOR, buttonMonitor.isPressed()?HIGH:LOW);
+	pinMode(PIN_TACT_MOTOR, OUTPUT);
+	digitalWrite(PIN_TACT_MOTOR, buttonMonitor.isPressed() ? HIGH : LOW);
 #endif
 #ifdef PIN_TACT_MOTOR
 	if (digitalRead(PIN_TACT_MOTOR) == HIGH) {
@@ -105,8 +106,8 @@ void setup() {
 	}
 #endif
 
-    Serial.begin(serialBaudRate);
-    globalTimer = timer_create_default();
+	Serial.begin(serialBaudRate);
+	globalTimer = timer_create_default();
 
 	Serial.println();
 	Serial.println();
@@ -149,7 +150,7 @@ void setup() {
 	statusManager.setStatus(SlimeVR::Status::LOADING, true);
 
 	ledManager.setup();
-    ledManager.on();
+	ledManager.on();
 	configuration.setup();
 
 	SerialCommands::setUp();
@@ -207,8 +208,8 @@ void loop() {
 	globalTimer.tick();
 	SerialCommands::update();
 	OTA::otaUpdate();
-    chargerMonitor.update();
-    usbPDMonitor.update();
+	chargerMonitor.update();
+	usbPDMonitor.update();
 	networkManager.update();
 
 #if DEBUG_MEASURE_SENSOR_TIME_TAKEN
@@ -221,7 +222,7 @@ void loop() {
 
 	battery.Loop();
 #ifdef PIN_BUTTON_INPUT
-    buttonMonitor.update();
+	buttonMonitor.update();
 #endif
 	ledManager.update();
 	I2CSCAN::update();

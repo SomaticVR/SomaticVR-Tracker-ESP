@@ -168,7 +168,7 @@ void cmdSet(CmdParser* parser) {
 
 void printState() {
 	logger.info(
-		"SlimeVR Tracker, board: %d, hardware: %d, protocol: %d, firmware: %s, "
+		"SlimeVR Tracker, board:  %d, hardware: %d, protocol: %d, firmware: %s, "
 		"address: %s, mac: %s, status: %d, wifi state: %d",
 		BOARD,
 		HARDWARE_MCU,
@@ -191,10 +191,10 @@ void printState() {
 			sensor->isWorking() ? "true" : "false",
 			sensor->getHadData() ? "true" : "false"
 		);
-	// 	const char* mag = sensor->getAttachedMagnetometer();
-	// 	if (mag) {
-	// 		logger.info("Sensor[%d] magnetometer: %s", sensor->getSensorId(), mag);
-	// }
+		// 	const char* mag = sensor->getAttachedMagnetometer();
+		// 	if (mag) {
+		// 		logger.info("Sensor[%d] magnetometer: %s", sensor->getSensorId(), mag);
+		// }
 	}
 	logger.info(
 		"Battery voltage: %.3f, level: %.1f%%",
@@ -281,8 +281,8 @@ void cmdGet(CmdParser* parser) {
 			BOARD,
 			static_cast<int>(sensorManager.getSensorType(0)),
 			static_cast<int>(sensorManager.getSensorType(1)),
-			180.0, //IMU_ROTATION,
-			180.0, //SECOND_IMU_ROTATION,
+			180.0,  // IMU_ROTATION,
+			180.0,  // SECOND_IMU_ROTATION,
 			BATTERY_MONITOR,
 			BATTERY_SHIELD_RESISTANCE,
 			BATTERY_SHIELD_R1,
@@ -333,11 +333,12 @@ void cmdGet(CmdParser* parser) {
 			logger.info("[TEST] Sensor[0] sent some data, looks working.");
 		}
 		logger.info("[TEST] Status Report:");
-		for (uint8_t i = 0; i < 8; i++)
-		{
-			SlimeVR::Status::Status status = static_cast<SlimeVR::Status::Status>(1u<<i);
-			if (statusManager.hasStatus(status))
+		for (uint8_t i = 0; i < 8; i++) {
+			SlimeVR::Status::Status status
+				= static_cast<SlimeVR::Status::Status>(1u << i);
+			if (statusManager.hasStatus(status)) {
 				logger.info(SlimeVR::Status::statusToString(status));
+			}
 		}
 	}
 
@@ -443,7 +444,8 @@ void cmdTemperatureCalibration(CmdParser* parser) {
 		"  TCAL RESET: reset current temperature calibration in RAM (does not delete "
 		"already saved)"
 	);
-	logger.info("  TCAL SAVE: save current temperature calibration to persistent flash"
+	logger.info(
+		"  TCAL SAVE: save current temperature calibration to persistent flash"
 	);
 	logger.info("Note:");
 	logger.info(

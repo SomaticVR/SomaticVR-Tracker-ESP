@@ -64,10 +64,12 @@ IPAddress WiFiNetwork::getAddress() { return WiFi.localIP(); }
 
 void WiFiNetwork::setUp() {
 	wifiHandlerLogger.info("Setting up WiFi");
-    uint8_t mac[6];
-    String hostname = "OrionTracker";
+	uint8_t mac[6];
+	String hostname = "OrionTracker";
 	WiFi.macAddress(mac);
-    WiFi.setHostname((hostname + String(mac[3], HEX) + String(mac[4], HEX) + String(mac[5], HEX)).c_str());
+	WiFi.setHostname((hostname + String(mac[3], HEX) + String(mac[4], HEX)
+					  + String(mac[5], HEX))
+						 .c_str());
 	WiFi.persistent(true);
 	WiFi.mode(WIFI_STA);
 	wifiHandlerLogger.info(
@@ -76,28 +78,41 @@ void WiFiNetwork::setUp() {
 		getPassword().length()
 	);
 
-    #if ESP32
-    esp_err_t espStatus = esp_wifi_set_max_tx_power(17.5*4); // argument is max dBm * 4
-    int8_t power = 0;
-    switch (espStatus)
-    {
-        case ESP_OK:
-            if (ESP_OK == esp_wifi_get_max_tx_power(&power))
-                wifiHandlerLogger.debug("Max WiFi TX power set to %1.1f dBm", power/4.0f);
-            break;
-        case ESP_ERR_WIFI_NOT_INIT:
-            wifiHandlerLogger.debug("Failed to set max WiFi TX power. Reason: WiFi not initialized.");
-            break;
-        case ESP_ERR_WIFI_NOT_STARTED:
-            wifiHandlerLogger.debug("Failed to set max WiFi TX power. Reason: WiFi not started.");
-            break;
-        case ESP_ERR_INVALID_ARG:
-            wifiHandlerLogger.debug("Failed to set max WiFi TX power. Reason: Invalid Argument.");
-            break;
-        default:
-            wifiHandlerLogger.debug("Failed to set max WiFi TX power. Reason: Unknown. error code: %04x", espStatus);
-    }
-    #endif
+#if ESP32
+	esp_err_t espStatus
+		= esp_wifi_set_max_tx_power(17.5 * 4);  // argument is max dBm * 4
+	int8_t power = 0;
+	switch (espStatus) {
+		case ESP_OK:
+			if (ESP_OK == esp_wifi_get_max_tx_power(&power)) {
+				wifiHandlerLogger.debug(
+					"Max WiFi TX power set to %1.1f dBm",
+					power / 4.0f
+				);
+			}
+			break;
+		case ESP_ERR_WIFI_NOT_INIT:
+			wifiHandlerLogger.debug(
+				"Failed to set max WiFi TX power. Reason: WiFi not initialized."
+			);
+			break;
+		case ESP_ERR_WIFI_NOT_STARTED:
+			wifiHandlerLogger.debug(
+				"Failed to set max WiFi TX power. Reason: WiFi not started."
+			);
+			break;
+		case ESP_ERR_INVALID_ARG:
+			wifiHandlerLogger.debug(
+				"Failed to set max WiFi TX power. Reason: Invalid Argument."
+			);
+			break;
+		default:
+			wifiHandlerLogger.debug(
+				"Failed to set max WiFi TX power. Reason: Unknown. error code: %04x",
+				espStatus
+			);
+	}
+#endif
 	trySavedCredentials();
 
 #if ESP8266
@@ -302,7 +317,8 @@ void WiFiNetwork::showConnectionAttemptFailed(const char* type) const {
 
 bool WiFiNetwork::trySavedCredentials() {
 	if (getSSID().length() == 0) {
-		wifiHandlerLogger.debug("Skipping saved credentials attempt on 0-length SSID..."
+		wifiHandlerLogger.debug(
+			"Skipping saved credentials attempt on 0-length SSID..."
 		);
 		wifiState = WiFiReconnectionStatus::HardcodeAttempt;
 		return false;

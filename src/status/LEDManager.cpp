@@ -27,8 +27,8 @@
 #include "Status.h"
 
 #define LED_RAMP_MILLIS 50
-#define LEDC_MAX ((1u<<m_ledcBits)-1)
-#define MAX_BRIGHTNESS 0.10f // in percent
+#define LEDC_MAX ((1u << m_ledcBits) - 1)
+#define MAX_BRIGHTNESS 0.10f  // in percent
 
 namespace SlimeVR {
 void LEDManager::setup() {
@@ -48,7 +48,7 @@ void LEDManager::setup() {
 void LEDManager::on() {
 	if (m_Enabled) {
 #if ESP32 && ENABLE_LEDC
-		setBrightness((unsigned int) LEDC_MAX);
+		setBrightness((unsigned int)LEDC_MAX);
 #else
 		digitalWrite(m_Pin, m_On);
 #endif
@@ -79,48 +79,59 @@ void LEDManager::pattern(unsigned long timeon, unsigned long timeoff, int times)
 }
 
 #if ESP32 && ENABLE_LEDC
-void LEDManager::setBrightness(float percent)
-{
-    setBrightness( (unsigned int)(percent/100.0f * LEDC_MAX));
+void LEDManager::setBrightness(float percent) {
+	setBrightness((unsigned int)(percent / 100.0f * LEDC_MAX));
 }
 
-void LEDManager::setBrightness(unsigned int brightness)
-{
-    if (brightness > LEDC_MAX)
-        brightness = LEDC_MAX;
-    if (brightness == m_CurrentBrightness)
-        return;
-    m_CurrentBrightness = brightness;
-    m_Logger.trace("Brightness set to %d. max is %d", brightness, LEDC_MAX);
-    ledcWrite(m_Pin, brightness * MAX_BRIGHTNESS);
+void LEDManager::setBrightness(unsigned int brightness) {
+	if (brightness > LEDC_MAX) {
+		brightness = LEDC_MAX;
+	}
+	if (brightness == m_CurrentBrightness) {
+		return;
+	}
+	m_CurrentBrightness = brightness;
+	m_Logger.trace("Brightness set to %d. max is %d", brightness, LEDC_MAX);
+	ledcWrite(m_Pin, brightness * MAX_BRIGHTNESS);
 }
 
-void LEDManager::setRamp(float startPercent, float endPercent, unsigned long ms)
-{
-    m_CurrentStage = RAMP;
-    setRamp((unsigned int)(startPercent/100.0f * LEDC_MAX), (unsigned int)(endPercent/100.0f * LEDC_MAX), ms);
+void LEDManager::setRamp(float startPercent, float endPercent, unsigned long ms) {
+	m_CurrentStage = RAMP;
+	setRamp(
+		(unsigned int)(startPercent / 100.0f * LEDC_MAX),
+		(unsigned int)(endPercent / 100.0f * LEDC_MAX),
+		ms
+	);
 }
 
-void LEDManager::setRamp(unsigned int startBrightness, unsigned int endBrightness, unsigned long ms)
-{
-    m_CurrentStage = RAMP;
-    m_rampStartBrightness = startBrightness;
-    m_rampEndBrightness = endBrightness;
-    m_rampDifference = ((int)m_rampEndBrightness - (int)m_rampStartBrightness) / (ms/LED_RAMP_MILLIS);
-    if (m_rampDifference > m_rampEndBrightness)
-        m_rampDifference = m_rampEndBrightness;
-    m_Logger.trace("Ramp Start: %d, end: %d, ramp: %d", startBrightness, endBrightness, m_rampDifference);
-    setBrightness(m_rampStartBrightness);
+void LEDManager::setRamp(
+	unsigned int startBrightness,
+	unsigned int endBrightness,
+	unsigned long ms
+) {
+	m_CurrentStage = RAMP;
+	m_rampStartBrightness = startBrightness;
+	m_rampEndBrightness = endBrightness;
+	m_rampDifference = ((int)m_rampEndBrightness - (int)m_rampStartBrightness)
+					 / (ms / LED_RAMP_MILLIS);
+	if (m_rampDifference > m_rampEndBrightness) {
+		m_rampDifference = m_rampEndBrightness;
+	}
+	m_Logger.trace(
+		"Ramp Start: %d, end: %d, ramp: %d",
+		startBrightness,
+		endBrightness,
+		m_rampDifference
+	);
+	setBrightness(m_rampStartBrightness);
 }
 
-void LEDManager::rampFromCurrent(float endPercent, unsigned long ms)
-{
-    rampFromCurrent((unsigned int)(endPercent/100.0f * LEDC_MAX), ms);
+void LEDManager::rampFromCurrent(float endPercent, unsigned long ms) {
+	rampFromCurrent((unsigned int)(endPercent / 100.0f * LEDC_MAX), ms);
 }
 
-void LEDManager::rampFromCurrent(unsigned int endBrightness, unsigned long ms)
-{
-    setRamp(m_CurrentBrightness, endBrightness, ms);
+void LEDManager::rampFromCurrent(unsigned int endBrightness, unsigned long ms) {
+	setRamp(m_CurrentBrightness, endBrightness, ms);
 }
 #endif
 
@@ -152,45 +163,42 @@ void LEDManager::update() {
 				length = SHUTDOWN_INTERVAL;
 				break;
 #if ESP32 && ENABLE_LEDC
-        case RAMP:
-        case RAMP_CONTINUOUS:
-            m_CurrentStage = RAMP;
-            rampFromCurrent(0.0f,1000);
-            break;
+			case RAMP:
+			case RAMP_CONTINUOUS:
+				m_CurrentStage = RAMP;
+				rampFromCurrent(0.0f, 1000);
+				break;
 #endif
-
-        }
-    } else if (statusManager.hasStatus(Status::BATTERY_CHARGE_COMPLETE)) {
-        // m_Logger.info("Battery Charge Complete: %d", m_CurrentStage);
-        switch (m_CurrentStage)
-        {
-        case ON:
-        case OFF:
-        case INTERVAL:
-        case RAMP:
-        case RAMP_CONTINUOUS:
+		}
+	} else if (statusManager.hasStatus(Status::BATTERY_CHARGE_COMPLETE)) {
+		// m_Logger.info("Battery Charge Complete: %d", m_CurrentStage);
+		switch (m_CurrentStage) {
+			case ON:
+			case OFF:
+			case INTERVAL:
+			case RAMP:
+			case RAMP_CONTINUOUS:
 #if ESP32 && ENABLE_LEDC
-            rampFromCurrent(50.0f, 1000);
-            length = LED_RAMP_MILLIS;
+				rampFromCurrent(50.0f, 1000);
+				length = LED_RAMP_MILLIS;
 #endif
-            break;
-        }
-    } else if (statusManager.hasStatus(Status::BATTERY_CHARGING)) {
-        // m_Logger.info("Battery Charging: %d", m_CurrentStage);
+				break;
+		}
+	} else if (statusManager.hasStatus(Status::BATTERY_CHARGING)) {
+		// m_Logger.info("Battery Charging: %d", m_CurrentStage);
 #if ESP32 && ENABLE_LEDC
-        switch (m_CurrentStage)
-        {
-        case ON:
-        case OFF:
-        case INTERVAL:
-            setRamp(10.0f, 100.0f, 2000);
-            length = LED_RAMP_MILLIS;
-        case RAMP:
-            m_CurrentStage = RAMP_CONTINUOUS;
-        case RAMP_CONTINUOUS:
-            length = LED_RAMP_MILLIS;
-            break;
-        }
+		switch (m_CurrentStage) {
+			case ON:
+			case OFF:
+			case INTERVAL:
+				setRamp(10.0f, 100.0f, 2000);
+				length = LED_RAMP_MILLIS;
+			case RAMP:
+				m_CurrentStage = RAMP_CONTINUOUS;
+			case RAMP_CONTINUOUS:
+				length = LED_RAMP_MILLIS;
+				break;
+		}
 #endif
 	} else if (statusManager.hasStatus(Status::LOW_BATTERY)) {
 		count = LOW_BATTERY_COUNT;
@@ -206,11 +214,11 @@ void LEDManager::update() {
 				length = LOW_BATTERY_INTERVAL;
 				break;
 #if ESP32 && ENABLE_LEDC
-        case RAMP:
-        case RAMP_CONTINUOUS:
-            m_CurrentStage = RAMP;
-            rampFromCurrent(0.0f,1000);
-            break;
+			case RAMP:
+			case RAMP_CONTINUOUS:
+				m_CurrentStage = RAMP;
+				rampFromCurrent(0.0f, 1000);
+				break;
 #endif
 		}
 	} else if (statusManager.hasStatus(Status::IMU_ERROR)) {
@@ -227,11 +235,11 @@ void LEDManager::update() {
 				length = IMU_ERROR_INTERVAL;
 				break;
 #if ESP32 && ENABLE_LEDC
-        case RAMP:
-        case RAMP_CONTINUOUS:
-            m_CurrentStage = RAMP;
-            rampFromCurrent(0.0f,1000);
-            break;
+			case RAMP:
+			case RAMP_CONTINUOUS:
+				m_CurrentStage = RAMP;
+				rampFromCurrent(0.0f, 1000);
+				break;
 #endif
 		}
 	} else if (statusManager.hasStatus(Status::WIFI_CONNECTING)) {
@@ -248,11 +256,11 @@ void LEDManager::update() {
 				length = WIFI_CONNECTING_INTERVAL;
 				break;
 #if ESP32 && ENABLE_LEDC
-        case RAMP:
-        case RAMP_CONTINUOUS:
-            m_CurrentStage = RAMP;
-            rampFromCurrent(0.0f,1000);
-            break;
+			case RAMP:
+			case RAMP_CONTINUOUS:
+				m_CurrentStage = RAMP;
+				rampFromCurrent(0.0f, 1000);
+				break;
 #endif
 		}
 	} else if (statusManager.hasStatus(Status::SERVER_CONNECTING)) {
@@ -269,11 +277,11 @@ void LEDManager::update() {
 				length = SERVER_CONNECTING_INTERVAL;
 				break;
 #if ESP32 && ENABLE_LEDC
-        case RAMP:
-        case RAMP_CONTINUOUS:
-            m_CurrentStage = RAMP;
-            rampFromCurrent(0.0f,1000);
-            break;
+			case RAMP:
+			case RAMP_CONTINUOUS:
+				m_CurrentStage = RAMP;
+				rampFromCurrent(0.0f, 1000);
+				break;
 #endif
 		}
 	} else {
@@ -291,11 +299,11 @@ void LEDManager::update() {
 				length = LED_INTERVAL_STANDBY;
 				break;
 #if ESP32 && ENABLE_LEDC
-        case RAMP:
-        case RAMP_CONTINUOUS:
-            m_CurrentStage = RAMP;
-            rampFromCurrent(0.0f,1000);
-            break;
+			case RAMP:
+			case RAMP_CONTINUOUS:
+				m_CurrentStage = RAMP;
+				rampFromCurrent(0.0f, 1000);
+				break;
 #endif
 		}
 #else
@@ -328,24 +336,43 @@ void LEDManager::update() {
 				m_CurrentStage = ON;
 				break;
 #if ESP32 && ENABLE_LEDC
-        case RAMP:
-            m_Logger.trace("RAMP: %d, %d, %d, %d", m_CurrentBrightness, m_rampDifference, m_rampStartBrightness, m_rampEndBrightness);
-            setBrightness(m_CurrentBrightness + m_rampDifference);
-            if (((m_rampDifference > 0) && (m_CurrentBrightness >= m_rampEndBrightness)) ||
-                ((m_rampDifference < 0) && (m_CurrentBrightness <= -m_rampDifference)) || (m_rampDifference == 0))
-                m_CurrentStage = (m_CurrentBrightness > 0)?ON:OFF;
-            break;
-        case RAMP_CONTINUOUS:
-            m_Logger.trace("RAMP CONT: %d, %d, %d, %d", m_CurrentBrightness, m_rampDifference, m_rampStartBrightness, m_rampEndBrightness);
-            setBrightness(m_CurrentBrightness + m_rampDifference);
-            if (((m_rampDifference > 0) && (m_CurrentBrightness >= m_rampEndBrightness)) ||
-                ((m_rampDifference < 0) && (m_CurrentBrightness <= -m_rampDifference)) || (m_rampDifference == 0)) {
-                unsigned int temp = m_rampStartBrightness;
-                m_rampStartBrightness = m_rampEndBrightness;
-                m_rampEndBrightness = temp;
-                m_rampDifference = - m_rampDifference;
-            }
-            break;
+			case RAMP:
+				m_Logger.trace(
+					"RAMP: %d, %d, %d, %d",
+					m_CurrentBrightness,
+					m_rampDifference,
+					m_rampStartBrightness,
+					m_rampEndBrightness
+				);
+				setBrightness(m_CurrentBrightness + m_rampDifference);
+				if (((m_rampDifference > 0)
+					 && (m_CurrentBrightness >= m_rampEndBrightness))
+					|| ((m_rampDifference < 0)
+						&& (m_CurrentBrightness <= -m_rampDifference))
+					|| (m_rampDifference == 0)) {
+					m_CurrentStage = (m_CurrentBrightness > 0) ? ON : OFF;
+				}
+				break;
+			case RAMP_CONTINUOUS:
+				m_Logger.trace(
+					"RAMP CONT: %d, %d, %d, %d",
+					m_CurrentBrightness,
+					m_rampDifference,
+					m_rampStartBrightness,
+					m_rampEndBrightness
+				);
+				setBrightness(m_CurrentBrightness + m_rampDifference);
+				if (((m_rampDifference > 0)
+					 && (m_CurrentBrightness >= m_rampEndBrightness))
+					|| ((m_rampDifference < 0)
+						&& (m_CurrentBrightness <= -m_rampDifference))
+					|| (m_rampDifference == 0)) {
+					unsigned int temp = m_rampStartBrightness;
+					m_rampStartBrightness = m_rampEndBrightness;
+					m_rampEndBrightness = temp;
+					m_rampDifference = -m_rampDifference;
+				}
+				break;
 #endif
 		}
 	} else {
