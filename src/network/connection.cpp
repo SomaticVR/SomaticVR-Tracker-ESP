@@ -3,10 +3,10 @@
 	Copyright (c) 2023 SlimeVR Contributors
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
+	of this software and associated documentation files (the "Software"), to
+   deal in the Software without restriction, including without limitation the
+   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+   sell copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
 
 	The above copyright notice and this permission notice shall be included in
@@ -16,9 +16,9 @@
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+   IN THE SOFTWARE.
 */
 
 #include "connection.h"
@@ -90,7 +90,9 @@ bool Connection::endPacket() {
 }
 
 bool Connection::beginBundle() {
-	MUST_TRANSFER_BOOL(m_ServerFeatures.has(ServerFeatures::PROTOCOL_BUNDLE_SUPPORT));
+	MUST_TRANSFER_BOOL(
+		m_ServerFeatures.has(ServerFeatures::PROTOCOL_BUNDLE_SUPPORT)
+	);
 	MUST_TRANSFER_BOOL(m_Connected);
 	MUST_TRANSFER_BOOL(!m_IsBundle);
 	MUST_TRANSFER_BOOL(beginPacket());
@@ -216,7 +218,10 @@ void Connection::sendSensorAcceleration(uint8_t sensorId, Vector3 vector) {
 }
 
 // PACKET_BATTERY_LEVEL 12
-void Connection::sendBatteryLevel(float batteryVoltage, float batteryPercentage) {
+void Connection::sendBatteryLevel(
+	float batteryVoltage,
+	float batteryPercentage
+) {
 	MUST(m_Connected);
 	MUST(sendPacket(
 		SendPacketType::BatteryLevel,
@@ -294,7 +299,10 @@ void Connection::sendRotationData(
 }
 
 // PACKET_MAGNETOMETER_ACCURACY 18
-void Connection::sendMagnetometerAccuracy(uint8_t sensorId, float accuracyInfo) {
+void Connection::sendMagnetometerAccuracy(
+	uint8_t sensorId,
+	float accuracyInfo
+) {
 	MUST(m_Connected);
 	MUST(sendPacket(
 		SendPacketType::MagnetometerAccuracy,
@@ -333,7 +341,10 @@ void Connection::sendTemperature(uint8_t sensorId, float temperature) {
 void Connection::sendFeatureFlags() {
 	MUST(m_Connected);
 	sendPacketCallback(SendPacketType::FeatureFlags, [&]() {
-		return write(FirmwareFeatures::flags.data(), FirmwareFeatures::flags.size());
+		return write(
+			FirmwareFeatures::flags.data(),
+			FirmwareFeatures::flags.size()
+		);
 	});
 }
 
@@ -365,7 +376,8 @@ void Connection::sendTrackerDiscovery() {
 			// This is kept for backwards compatibility,
 			// but the latest SlimeVR server will not initialize trackers
 			// with firmware build > 8 until it recieves a sensor info packet
-			MUST_TRANSFER_BOOL(sendInt(static_cast<int>(sensorManager.getSensorType(0)))
+			MUST_TRANSFER_BOOL(
+				sendInt(static_cast<int>(sensorManager.getSensorType(0)))
 			);
 			MUST_TRANSFER_BOOL(sendInt(HARDWARE_MCU));
 			// Backwards compatibility, unused IMU data
@@ -376,8 +388,8 @@ void Connection::sendTrackerDiscovery() {
 			MUST_TRANSFER_BOOL(sendShortString(FIRMWARE_VERSION));
 			// MAC address string
 			MUST_TRANSFER_BOOL(sendBytes(mac, 6));
-			// Tracker type to hint the server if it's a glove or normal tracker or
-			// something else
+			// Tracker type to hint the server if it's a glove or normal tracker
+			// or something else
 			MUST_TRANSFER_BOOL(sendByte(static_cast<uint8_t>(TRACKER_TYPE)));
 			static_assert(std::string_view{VENDOR_NAME}.size() <= 255);
 			MUST_TRANSFER_BOOL(sendShortString(VENDOR_NAME));
@@ -501,7 +513,9 @@ void Connection::returnLastPacket(int len) {
 	MUST(endPacket());
 }
 
-void Connection::updateSensorState(std::vector<std::unique_ptr<Sensor>>& sensors) {
+void Connection::updateSensorState(
+	std::vector<std::unique_ptr<Sensor>>& sensors
+) {
 	if (millis() - m_LastSensorInfoPacketTimestamp <= 1000) {
 		return;
 	}
@@ -531,7 +545,8 @@ void Connection::maybeRequestFeatureFlags() {
 
 bool Connection::isSensorStateUpdated(int i, std::unique_ptr<Sensor>& sensor) {
 	return (m_AckedSensorState[i] != sensor->getSensorState()
-			|| m_AckedSensorCalibration[i] != sensor->hasCompletedRestCalibration()
+			|| m_AckedSensorCalibration[i]
+				   != sensor->hasCompletedRestCalibration()
 			|| m_AckedSensorConfigData[i] != sensor->getSensorConfigData())
 		&& sensor->getSensorType() != SensorTypeID::Unknown
 		&& sensor->getSensorType() != SensorTypeID::Empty;
@@ -544,25 +559,28 @@ void Connection::searchForServer() {
 			break;
 		}
 
+		// https://github.com/SlimeVR/SlimeVR-Tracker-ESP/issues/516 fix
+		// from
+		// https://github.com/kounocom/SlimeVR-Tracker-ESP/commit/6e21ba0b0d7d719bb924deadef41a9e6d8fccb2d#diff-f9c2c74e084edc8f3bda0c3f9eb75959d82ef5da197cabed835b90c0e92f6524L547
 
-		// https://github.com/SlimeVR/SlimeVR-Tracker-ESP/issues/516 fix 
-		// from https://github.com/kounocom/SlimeVR-Tracker-ESP/commit/6e21ba0b0d7d719bb924deadef41a9e6d8fccb2d#diff-f9c2c74e084edc8f3bda0c3f9eb75959d82ef5da197cabed835b90c0e92f6524L547
-
-		#ifdef ESP32
+#ifdef ESP32
 		if (packetSize > sizeof(m_Packet)) {
-			// ESP32 seemingly gets stuck when the packet is bigger than the buffer it has
-			// This only happens with packets not meant for it being incidentally received
-			// For compatibility we ignore these and flush the UDP buffer
+			// ESP32 seemingly gets stuck when the packet is bigger than the
+			// buffer it has This only happens with packets not meant for it
+			// being incidentally received For compatibility we ignore these and
+			// flush the UDP buffer
 			m_UDP.flush();
 			while (packetSize > 0) {
-				packetSize -= m_UDP.read(m_Packet, std::min(sizeof(m_Packet), static_cast<size_t>(packetSize)));
+				packetSize -= m_UDP.read(
+					m_Packet,
+					std::min(sizeof(m_Packet), static_cast<size_t>(packetSize))
+				);
 			}
 			continue;
 		}
-		#endif
-		
-		// end fix
+#endif
 
+		// end fix
 
 		// receive incoming UDP packets
 		[[maybe_unused]] int len = m_UDP.read(m_Packet, sizeof(m_Packet));
@@ -577,8 +595,8 @@ void Connection::searchForServer() {
 		m_Logger.traceArray("UDP packet contents: ", m_Packet, len);
 #endif
 
-		// Handshake is different, it has 3 in the first byte, not the 4th, and data
-		// starts right after
+		// Handshake is different, it has 3 in the first byte, not the 4th, and
+		// data starts right after
 		if (static_cast<ReceivePacketType>(m_Packet[0])
 			== ReceivePacketType::Handshake) {
 			if (strncmp((char*)m_Packet + 1, "Hey OVR =D 5", 12) != 0) {
@@ -680,26 +698,28 @@ void Connection::update() {
 		return;
 	}
 
+	// https://github.com/SlimeVR/SlimeVR-Tracker-ESP/issues/516 fix
+	// from
+	// https://github.com/kounocom/SlimeVR-Tracker-ESP/commit/6e21ba0b0d7d719bb924deadef41a9e6d8fccb2d#diff-f9c2c74e084edc8f3bda0c3f9eb75959d82ef5da197cabed835b90c0e92f6524L547
 
-
-	// https://github.com/SlimeVR/SlimeVR-Tracker-ESP/issues/516 fix 
-	// from https://github.com/kounocom/SlimeVR-Tracker-ESP/commit/6e21ba0b0d7d719bb924deadef41a9e6d8fccb2d#diff-f9c2c74e084edc8f3bda0c3f9eb75959d82ef5da197cabed835b90c0e92f6524L547
-
-	#ifdef ESP32
+#ifdef ESP32
 	if (packetSize > sizeof(m_Packet)) {
-		// ESP32 seemingly gets stuck when the packet is bigger than the buffer it has
-		// This only happens with packets not meant for it being incidentally received
-		// For compatibility we ignore these and flush the UDP buffer
+		// ESP32 seemingly gets stuck when the packet is bigger than the buffer
+		// it has This only happens with packets not meant for it being
+		// incidentally received For compatibility we ignore these and flush the
+		// UDP buffer
 		m_UDP.flush();
 		while (packetSize > 0) {
-			packetSize -= m_UDP.read(m_Packet, std::min(sizeof(m_Packet), static_cast<size_t>(packetSize)));
+			packetSize -= m_UDP.read(
+				m_Packet,
+				std::min(sizeof(m_Packet), static_cast<size_t>(packetSize))
+			);
 		}
 		return;
 	}
-	#endif
-	
-	// end fix
+#endif
 
+	// end fix
 
 	m_LastPacketTimestamp = millis();
 	int len = m_UDP.read(m_Packet, sizeof(m_Packet));
@@ -754,7 +774,8 @@ void Connection::update() {
 					if (len < 12) {
 						m_AckedSensorCalibration[i]
 							= sensors[i]->hasCompletedRestCalibration();
-						m_AckedSensorConfigData[i] = sensors[i]->getSensorConfigData();
+						m_AckedSensorConfigData[i]
+							= sensors[i]->getSensorConfigData();
 						break;
 					}
 					m_AckedSensorCalibration[i]
@@ -779,7 +800,9 @@ void Connection::update() {
 
 			if (!hadFlags) {
 #if PACKET_BUNDLING != PACKET_BUNDLING_DISABLED
-				if (m_ServerFeatures.has(ServerFeatures::PROTOCOL_BUNDLE_SUPPORT)) {
+				if (m_ServerFeatures.has(
+						ServerFeatures::PROTOCOL_BUNDLE_SUPPORT
+					)) {
 					m_Logger.debug("Server supports packet bundling");
 				}
 #endif
@@ -789,15 +812,19 @@ void Connection::update() {
 		}
 
 		case ReceivePacketType::SetConfigFlag: {
-			// Packet type (4) + Packet number (8) + sensor_id(1) + flag_id (2) + state
-			// (1)
+			// Packet type (4) + Packet number (8) + sensor_id(1) + flag_id (2)
+			// + state (1)
 			if (len < 16) {
 				m_Logger.warn("Invalid sensor config flag packet: too short");
 				break;
 			}
 
 			SetConfigFlagPacket setConfigFlagPacket;
-			memcpy(&setConfigFlagPacket, m_Packet + 12, sizeof(SetConfigFlagPacket));
+			memcpy(
+				&setConfigFlagPacket,
+				m_Packet + 12,
+				sizeof(SetConfigFlagPacket)
+			);
 
 			uint8_t sensorId = setConfigFlagPacket.sensorId;
 			SensorToggles flag = setConfigFlagPacket.flag;
@@ -810,7 +837,8 @@ void Connection::update() {
 				auto& sensors = sensorManager.getSensors();
 
 				if (sensorId >= sensors.size()) {
-					m_Logger.warn("Invalid sensor config flag packet: invalid sensor id"
+					m_Logger.warn(
+						"Invalid sensor config flag packet: invalid sensor id"
 					);
 					break;
 				}

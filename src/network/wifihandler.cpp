@@ -3,10 +3,10 @@
 	Copyright (c) 2021 Eiren Rain & SlimeVR contributors
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
+	of this software and associated documentation files (the "Software"), to
+   deal in the Software without restriction, including without limitation the
+   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+   sell copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
 
 	The above copyright notice and this permission notice shall be included in
@@ -16,9 +16,9 @@
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+   IN THE SOFTWARE.
 */
 #include "network/wifihandler.h"
 
@@ -108,7 +108,8 @@ void WiFiNetwork::setUp() {
 			break;
 		default:
 			wifiHandlerLogger.debug(
-				"Failed to set max WiFi TX power. Reason: Unknown. error code: %04x",
+				"Failed to set max WiFi TX power. Reason: Unknown. error code: "
+				"%04x",
 				espStatus
 			);
 	}
@@ -139,7 +140,9 @@ void WiFiNetwork::setUp() {
 		esp_wifi_set_config(WIFI_IF_STA, &conf);
 		WiFi.setSleep(WIFI_PS_MAX_MODEM);
 	} else {
-		wifiHandlerLogger.error("Unable to get WiFi config, power saving not enabled!");
+		wifiHandlerLogger.error(
+			"Unable to get WiFi config, power saving not enabled!"
+		);
 	}
 #endif
 #endif
@@ -162,8 +165,8 @@ String WiFiNetwork::getSSID() {
 #if ESP8266
 	return WiFi.SSID();
 #else
-	// Necessary, because without a WiFi.begin(), ESP32 is not kind enough to load the
-	// SSID on its own, for whatever reason
+	// Necessary, because without a WiFi.begin(), ESP32 is not kind enough to
+	// load the SSID on its own, for whatever reason
 	wifi_config_t wifiConfig;
 	esp_wifi_get_config((wifi_interface_t)ESP_IF_WIFI_STA, &wifiConfig);
 	return {reinterpret_cast<char*>(wifiConfig.sta.ssid)};
@@ -181,7 +184,9 @@ String WiFiNetwork::getPassword() {
 #endif
 }
 
-WiFiNetwork::WiFiReconnectionStatus WiFiNetwork::getWiFiState() { return wifiState; }
+WiFiNetwork::WiFiReconnectionStatus WiFiNetwork::getWiFiState() {
+	return wifiState;
+}
 
 void WiFiNetwork::upkeep() {
 	wifiProvisioning.upkeepProvisioning();
@@ -228,19 +233,22 @@ void WiFiNetwork::upkeep() {
 			}
 			return;
 		case WiFiReconnectionStatus::HardcodeAttempt:  // Couldn't connect with
-													   // second set of credentials
+													   // second set of
+													   // credentials
 			if (!tryHardcodedCredentials()) {
 				wifiState = WiFiReconnectionStatus::Failed;
 			}
 			return;
-		case WiFiReconnectionStatus::ServerCredAttempt:  // Couldn't connect with
-														 // server-sent credentials.
+		case WiFiReconnectionStatus::ServerCredAttempt:  // Couldn't connect
+														 // with server-sent
+														 // credentials.
 			if (!tryServerCredentials()) {
 				wifiState = WiFiReconnectionStatus::Failed;
 			}
 			return;
-		case WiFiReconnectionStatus::Failed:  // Couldn't connect with second set of
-											  // credentials or server credentials
+		case WiFiReconnectionStatus::Failed:  // Couldn't connect with second
+											  // set of credentials or server
+											  // credentials
 // Return to the default PHY Mode N.
 #if ESP8266
 			if constexpr (USE_ATTENUATION) {
@@ -254,7 +262,8 @@ void WiFiNetwork::upkeep() {
 					   >= static_cast<uint32_t>(WiFiTimeoutSeconds * 1000)) {
 				if (WiFi.status() != WL_IDLE_STATUS) {
 					wifiHandlerLogger.error(
-						"Can't connect from any credentials, error: %d, reason: %s.",
+						"Can't connect from any credentials, error: %d, "
+						"reason: %s.",
 						static_cast<int>(statusToFailure(WiFi.status())),
 						statusToReasonString(WiFi.status())
 					);
@@ -287,7 +296,9 @@ const char* WiFiNetwork::statusToReasonString(wl_status_t status) {
 	}
 }
 
-WiFiNetwork::WiFiFailureReason WiFiNetwork::statusToFailure(wl_status_t status) {
+WiFiNetwork::WiFiFailureReason WiFiNetwork::statusToFailure(
+	wl_status_t status
+) {
 	switch (status) {
 		case WL_DISCONNECTED:
 			return WiFiFailureReason::Timeout;
@@ -360,7 +371,9 @@ bool WiFiNetwork::tryHardcodedCredentials() {
 		}
 
 		retriedOnG = true;
-		wifiHandlerLogger.debug("Trying hardcoded credentials with PHY Mode G...");
+		wifiHandlerLogger.debug(
+			"Trying hardcoded credentials with PHY Mode G..."
+		);
 		// Don't need to save hardcoded credentials
 		WiFi.persistent(false);
 		auto result = tryConnecting(true, WIFI_CREDS_SSID, WIFI_CREDS_PASSWD);
@@ -396,7 +409,11 @@ bool WiFiNetwork::tryServerCredentials() {
 	return tryConnecting(true);
 }
 
-bool WiFiNetwork::tryConnecting(bool phyModeG, const char* SSID, const char* pass) {
+bool WiFiNetwork::tryConnecting(
+	bool phyModeG,
+	const char* SSID,
+	const char* pass
+) {
 #if ESP8266
 	if (phyModeG) {
 		WiFi.setPhyMode(WIFI_PHY_MODE_11G);

@@ -3,10 +3,10 @@
 	Copyright (c) 2021 Eiren Rain & SlimeVR contributors
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
+	of this software and associated documentation files (the "Software"), to
+   deal in the Software without restriction, including without limitation the
+   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+   sell copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
 
 	The above copyright notice and this permission notice shall be included in
@@ -16,9 +16,9 @@
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+   IN THE SOFTWARE.
 */
 
 #include "serialcommands.h"
@@ -85,8 +85,10 @@ bool lengthCheck(
 	return true;
 }
 
-unsigned int
-decode_base64_length_null(const char* const b64char, unsigned int* b64ssidlength) {
+unsigned int decode_base64_length_null(
+	const char* const b64char,
+	unsigned int* b64ssidlength
+) {
 	if (b64char == NULL) {
 		return 0;
 	}
@@ -110,7 +112,9 @@ void cmdSet(CmdParser* parser) {
 				}
 
 				wifiNetwork.setWiFiCredentials(sc_ssid, sc_pw);
-				logger.info("CMD SET WIFI OK: New wifi credentials set, reconnecting");
+				logger.info(
+					"CMD SET WIFI OK: New wifi credentials set, reconnecting"
+				);
 			}
 		} else if (parser->equalCmdParam(1, "BWIFI")) {
 			if (parser->getParamCount() < 3) {
@@ -156,7 +160,9 @@ void cmdSet(CmdParser* parser) {
 					ppass = NULL;
 				}
 				wifiNetwork.setWiFiCredentials(ssid, ppass);
-				logger.info("CMD SET BWIFI OK: New wifi credentials set, reconnecting");
+				logger.info(
+					"CMD SET BWIFI OK: New wifi credentials set, reconnecting"
+				);
 			}
 		} else {
 			logger.error("CMD SET ERROR: Unrecognized variable to set");
@@ -168,7 +174,8 @@ void cmdSet(CmdParser* parser) {
 
 void printState() {
 	logger.info(
-		"SlimeVR Tracker, board:  %d, hardware: %d, protocol: %d, firmware: %s, "
+		"SlimeVR Tracker, board:  %d, hardware: %d, protocol: %d, firmware: "
+		"%s, "
 		"address: %s, mac: %s, status: %d, wifi state: %d",
 		BOARD,
 		HARDWARE_MCU,
@@ -193,7 +200,8 @@ void printState() {
 		);
 		// 	const char* mag = sensor->getAttachedMagnetometer();
 		// 	if (mag) {
-		// 		logger.info("Sensor[%d] magnetometer: %s", sensor->getSensorId(), mag);
+		// 		logger.info("Sensor[%d] magnetometer: %s",
+		// sensor->getSensorId(), mag);
 		// }
 	}
 	logger.info(
@@ -299,7 +307,8 @@ void cmdGet(CmdParser* parser) {
 
 	if (parser->equalCmdParam(1, "TEST")) {
 		logger.info(
-			"[TEST] Board: %d, hardware: %d, protocol: %d, firmware: %s, address: %s, "
+			"[TEST] Board: %d, hardware: %d, protocol: %d, firmware: %s, "
+			"address: %s, "
 			"mac: %s, status: %d, wifi state: %d",
 			BOARD,
 			HARDWARE_MCU,
@@ -313,7 +322,8 @@ void cmdGet(CmdParser* parser) {
 		auto& sensor0 = sensorManager.getSensors()[0];
 		sensor0->motionLoop();
 		logger.info(
-			"[TEST] Sensor[0]: %s (%.3f %.3f %.3f %.3f) is working: %s, had data: %s",
+			"[TEST] Sensor[0]: %s (%.3f %.3f %.3f %.3f) is working: %s, had "
+			"data: %s",
 			getIMUNameByType(sensor0->getSensorType()),
 			UNPACK_QUATERNION(sensor0->getFusedRotation()),
 			sensor0->isWorking() ? "true" : "false",
@@ -403,7 +413,9 @@ void cmdFactoryReset(CmdParser* parser) {
 
 #if defined(WIFI_CREDS_SSID) && defined(WIFI_CREDS_PASSWD)
 #warning FACTORY RESET does not clear your hardcoded WiFi credentials!
-	logger.warn("FACTORY RESET does not clear your hardcoded WiFi credentials!");
+	logger.warn(
+		"FACTORY RESET does not clear your hardcoded WiFi credentials!"
+	);
 #endif
 
 	delay(3000);
@@ -437,11 +449,13 @@ void cmdTemperatureCalibration(CmdParser* parser) {
 	logger.info("Usage:");
 	logger.info("  TCAL PRINT: print current temperature calibration config");
 	logger.info(
-		"  TCAL DEBUG: print debug values for the current temperature calibration "
+		"  TCAL DEBUG: print debug values for the current temperature "
+		"calibration "
 		"profile"
 	);
 	logger.info(
-		"  TCAL RESET: reset current temperature calibration in RAM (does not delete "
+		"  TCAL RESET: reset current temperature calibration in RAM (does not "
+		"delete "
 		"already saved)"
 	);
 	logger.info(
@@ -449,7 +463,8 @@ void cmdTemperatureCalibration(CmdParser* parser) {
 	);
 	logger.info("Note:");
 	logger.info(
-		"  Temperature calibration config saves automatically when calibration percent "
+		"  Temperature calibration config saves automatically when calibration "
+		"percent "
 		"is at 100%%"
 	);
 }
@@ -479,5 +494,7 @@ void setUp() {
 #endif
 }
 
-void update() { cmdCallbacks.updateCmdProcessing(&cmdParser, &cmdBuffer, &Serial); }
+void update() {
+	cmdCallbacks.updateCmdProcessing(&cmdParser, &cmdBuffer, &Serial);
+}
 }  // namespace SerialCommands

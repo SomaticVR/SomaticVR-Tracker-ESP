@@ -45,14 +45,12 @@ void BatteryMonitor::Setup() {
 
 void BatteryMonitor::Loop() {
 #ifdef PIN_BAT_STAT_CHRG
-	statusManager.setStatus(
-		SlimeVR::Status::BATTERY_CHARGING,
+	statusManager.setStatus(SlimeVR::Status::BATTERY_CHARGING,
 		digitalRead(PIN_BAT_STAT_CHRG) != HIGH
 	);
 #endif
 #ifdef PIN_BAT_STAT_CHRG_DONE
-	statusManager.setStatus(
-		SlimeVR::Status::BATTERY_CHARGE_COMPLETE,
+	statusManager.setStatus(SlimeVR::Status::BATTERY_CHARGE_COMPLETE,
 		digitalRead(PIN_BAT_STAT_CHRG_DONE) != HIGH
 	);
 #endif
