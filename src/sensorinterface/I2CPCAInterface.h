@@ -40,8 +40,8 @@ public:
 	)
 		: m_Wire(sclpin, sdapin)
 		, m_Address(address)
-		, m_Channel(channel){};
-	~I2CPCASensorInterface(){};
+		, m_Channel(channel) {};
+	~I2CPCASensorInterface() {};
 
 	bool init() override final;
 	void swapIn() override final;

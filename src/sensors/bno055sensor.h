@@ -42,14 +42,14 @@ public:
 		uint8_t
 	)
 		: Sensor(
-			"BNO055Sensor",
-			SensorTypeID::BNO055,
-			id,
-			registerInterface,
-			rotation,
-			sensorInterface
-		){};
-	~BNO055Sensor(){};
+			  "BNO055Sensor",
+			  SensorTypeID::BNO055,
+			  id,
+			  registerInterface,
+			  rotation,
+			  sensorInterface
+		  ) {};
+	~BNO055Sensor() {};
 	void motionSetup() override final;
 	void motionLoop() override final;
 	void startCalibration(int calibrationType) override final;

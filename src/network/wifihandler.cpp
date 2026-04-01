@@ -3,10 +3,10 @@
 	Copyright (c) 2021 Eiren Rain & SlimeVR contributors
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
+	of this software and associated documentation files (the "Software"), to
+   deal in the Software without restriction, including without limitation the
+   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+   sell copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
 
 	The above copyright notice and this permission notice shall be included in
@@ -16,9 +16,9 @@
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+   IN THE SOFTWARE.
 */
 #include "network/wifihandler.h"
 
@@ -64,10 +64,12 @@ IPAddress WiFiNetwork::getAddress() { return WiFi.localIP(); }
 
 void WiFiNetwork::setUp() {
 	wifiHandlerLogger.info("Setting up WiFi");
-    uint8_t mac[6];
-    String hostname = "OrionTracker";
+	uint8_t mac[6];
+	String hostname = "OrionTracker";
 	WiFi.macAddress(mac);
-    WiFi.setHostname((hostname + String(mac[3], HEX) + String(mac[4], HEX) + String(mac[5], HEX)).c_str());
+	WiFi.setHostname((hostname + String(mac[3], HEX) + String(mac[4], HEX)
+					  + String(mac[5], HEX))
+						 .c_str());
 	WiFi.persistent(true);
 	WiFi.mode(WIFI_STA);
 	wifiHandlerLogger.info(
@@ -76,28 +78,42 @@ void WiFiNetwork::setUp() {
 		getPassword().length()
 	);
 
-    #if ESP32
-    esp_err_t espStatus = esp_wifi_set_max_tx_power(17.5*4); // argument is max dBm * 4
-    int8_t power = 0;
-    switch (espStatus)
-    {
-        case ESP_OK:
-            if (ESP_OK == esp_wifi_get_max_tx_power(&power))
-                wifiHandlerLogger.debug("Max WiFi TX power set to %1.1f dBm", power/4.0f);
-            break;
-        case ESP_ERR_WIFI_NOT_INIT:
-            wifiHandlerLogger.debug("Failed to set max WiFi TX power. Reason: WiFi not initialized.");
-            break;
-        case ESP_ERR_WIFI_NOT_STARTED:
-            wifiHandlerLogger.debug("Failed to set max WiFi TX power. Reason: WiFi not started.");
-            break;
-        case ESP_ERR_INVALID_ARG:
-            wifiHandlerLogger.debug("Failed to set max WiFi TX power. Reason: Invalid Argument.");
-            break;
-        default:
-            wifiHandlerLogger.debug("Failed to set max WiFi TX power. Reason: Unknown. error code: %04x", espStatus);
-    }
-    #endif
+#if ESP32
+	esp_err_t espStatus
+		= esp_wifi_set_max_tx_power(17.5 * 4);  // argument is max dBm * 4
+	int8_t power = 0;
+	switch (espStatus) {
+		case ESP_OK:
+			if (ESP_OK == esp_wifi_get_max_tx_power(&power)) {
+				wifiHandlerLogger.debug(
+					"Max WiFi TX power set to %1.1f dBm",
+					power / 4.0f
+				);
+			}
+			break;
+		case ESP_ERR_WIFI_NOT_INIT:
+			wifiHandlerLogger.debug(
+				"Failed to set max WiFi TX power. Reason: WiFi not initialized."
+			);
+			break;
+		case ESP_ERR_WIFI_NOT_STARTED:
+			wifiHandlerLogger.debug(
+				"Failed to set max WiFi TX power. Reason: WiFi not started."
+			);
+			break;
+		case ESP_ERR_INVALID_ARG:
+			wifiHandlerLogger.debug(
+				"Failed to set max WiFi TX power. Reason: Invalid Argument."
+			);
+			break;
+		default:
+			wifiHandlerLogger.debug(
+				"Failed to set max WiFi TX power. Reason: Unknown. error code: "
+				"%04x",
+				espStatus
+			);
+	}
+#endif
 	trySavedCredentials();
 
 #if ESP8266
@@ -147,8 +163,8 @@ String WiFiNetwork::getSSID() {
 #if ESP8266
 	return WiFi.SSID();
 #else
-	// Necessary, because without a WiFi.begin(), ESP32 is not kind enough to load the
-	// SSID on its own, for whatever reason
+	// Necessary, because without a WiFi.begin(), ESP32 is not kind enough to
+	// load the SSID on its own, for whatever reason
 	wifi_config_t wifiConfig;
 	esp_wifi_get_config((wifi_interface_t)ESP_IF_WIFI_STA, &wifiConfig);
 	return {reinterpret_cast<char*>(wifiConfig.sta.ssid)};
@@ -213,19 +229,22 @@ void WiFiNetwork::upkeep() {
 			}
 			return;
 		case WiFiReconnectionStatus::HardcodeAttempt:  // Couldn't connect with
-													   // second set of credentials
+													   // second set of
+													   // credentials
 			if (!tryHardcodedCredentials()) {
 				wifiState = WiFiReconnectionStatus::Failed;
 			}
 			return;
-		case WiFiReconnectionStatus::ServerCredAttempt:  // Couldn't connect with
-														 // server-sent credentials.
+		case WiFiReconnectionStatus::ServerCredAttempt:  // Couldn't connect
+														 // with server-sent
+														 // credentials.
 			if (!tryServerCredentials()) {
 				wifiState = WiFiReconnectionStatus::Failed;
 			}
 			return;
-		case WiFiReconnectionStatus::Failed:  // Couldn't connect with second set of
-											  // credentials or server credentials
+		case WiFiReconnectionStatus::Failed:  // Couldn't connect with second
+											  // set of credentials or server
+											  // credentials
 // Return to the default PHY Mode N.
 #if ESP8266
 			if constexpr (USE_ATTENUATION) {
@@ -239,7 +258,8 @@ void WiFiNetwork::upkeep() {
 					   >= static_cast<uint32_t>(WiFiTimeoutSeconds * 1000)) {
 				if (WiFi.status() != WL_IDLE_STATUS) {
 					wifiHandlerLogger.error(
-						"Can't connect from any credentials, error: %d, reason: %s.",
+						"Can't connect from any credentials, error: %d, "
+						"reason: %s.",
 						static_cast<int>(statusToFailure(WiFi.status())),
 						statusToReasonString(WiFi.status())
 					);

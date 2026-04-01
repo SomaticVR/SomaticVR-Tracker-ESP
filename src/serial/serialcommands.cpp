@@ -3,10 +3,10 @@
 	Copyright (c) 2021 Eiren Rain & SlimeVR contributors
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
+	of this software and associated documentation files (the "Software"), to
+   deal in the Software without restriction, including without limitation the
+   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+   sell copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
 
 	The above copyright notice and this permission notice shall be included in
@@ -16,9 +16,9 @@
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+   IN THE SOFTWARE.
 */
 
 #include "serialcommands.h"
@@ -168,7 +168,8 @@ void cmdSet(CmdParser* parser) {
 
 void printState() {
 	logger.info(
-		"SlimeVR Tracker, board: %d, hardware: %d, protocol: %d, firmware: %s, "
+		"SlimeVR Tracker, board:  %d, hardware: %d, protocol: %d, firmware: "
+		"%s, "
 		"address: %s, mac: %s, status: %d, wifi state: %d",
 		BOARD,
 		HARDWARE_MCU,
@@ -191,10 +192,11 @@ void printState() {
 			sensor->isWorking() ? "true" : "false",
 			sensor->getHadData() ? "true" : "false"
 		);
-	// 	const char* mag = sensor->getAttachedMagnetometer();
-	// 	if (mag) {
-	// 		logger.info("Sensor[%d] magnetometer: %s", sensor->getSensorId(), mag);
-	// }
+		// 	const char* mag = sensor->getAttachedMagnetometer();
+		// 	if (mag) {
+		// 		logger.info("Sensor[%d] magnetometer: %s",
+		// sensor->getSensorId(), mag);
+		// }
 	}
 	logger.info(
 		"Battery voltage: %.3f, level: %.1f%%",
@@ -281,8 +283,8 @@ void cmdGet(CmdParser* parser) {
 			BOARD,
 			static_cast<int>(sensorManager.getSensorType(0)),
 			static_cast<int>(sensorManager.getSensorType(1)),
-			180.0, //IMU_ROTATION,
-			180.0, //SECOND_IMU_ROTATION,
+			180.0,  // IMU_ROTATION,
+			180.0,  // SECOND_IMU_ROTATION,
 			BATTERY_MONITOR,
 			BATTERY_SHIELD_RESISTANCE,
 			BATTERY_SHIELD_R1,
@@ -299,7 +301,8 @@ void cmdGet(CmdParser* parser) {
 
 	if (parser->equalCmdParam(1, "TEST")) {
 		logger.info(
-			"[TEST] Board: %d, hardware: %d, protocol: %d, firmware: %s, address: %s, "
+			"[TEST] Board: %d, hardware: %d, protocol: %d, firmware: %s, "
+			"address: %s, "
 			"mac: %s, status: %d, wifi state: %d",
 			BOARD,
 			HARDWARE_MCU,
@@ -313,7 +316,8 @@ void cmdGet(CmdParser* parser) {
 		auto& sensor0 = sensorManager.getSensors()[0];
 		sensor0->motionLoop();
 		logger.info(
-			"[TEST] Sensor[0]: %s (%.3f %.3f %.3f %.3f) is working: %s, had data: %s",
+			"[TEST] Sensor[0]: %s (%.3f %.3f %.3f %.3f) is working: %s, had "
+			"data: %s",
 			getIMUNameByType(sensor0->getSensorType()),
 			UNPACK_QUATERNION(sensor0->getFusedRotation()),
 			sensor0->isWorking() ? "true" : "false",
@@ -333,11 +337,12 @@ void cmdGet(CmdParser* parser) {
 			logger.info("[TEST] Sensor[0] sent some data, looks working.");
 		}
 		logger.info("[TEST] Status Report:");
-		for (uint8_t i = 0; i < 8; i++)
-		{
-			SlimeVR::Status::Status status = static_cast<SlimeVR::Status::Status>(1u<<i);
-			if (statusManager.hasStatus(status))
+		for (uint8_t i = 0; i < 8; i++) {
+			SlimeVR::Status::Status status
+				= static_cast<SlimeVR::Status::Status>(1u << i);
+			if (statusManager.hasStatus(status)) {
 				logger.info(SlimeVR::Status::statusToString(status));
+			}
 		}
 	}
 
@@ -436,18 +441,21 @@ void cmdTemperatureCalibration(CmdParser* parser) {
 	logger.info("Usage:");
 	logger.info("  TCAL PRINT: print current temperature calibration config");
 	logger.info(
-		"  TCAL DEBUG: print debug values for the current temperature calibration "
+		"  TCAL DEBUG: print debug values for the current temperature "
+		"calibration "
 		"profile"
 	);
 	logger.info(
-		"  TCAL RESET: reset current temperature calibration in RAM (does not delete "
+		"  TCAL RESET: reset current temperature calibration in RAM (does not "
+		"delete "
 		"already saved)"
 	);
 	logger.info("  TCAL SAVE: save current temperature calibration to persistent flash"
 	);
 	logger.info("Note:");
 	logger.info(
-		"  Temperature calibration config saves automatically when calibration percent "
+		"  Temperature calibration config saves automatically when calibration "
+		"percent "
 		"is at 100%%"
 	);
 }

@@ -36,9 +36,9 @@ public:
 
 class EmptySensorInterface : public SensorInterface {
 public:
-	EmptySensorInterface(){};
+	EmptySensorInterface() {};
 	bool init() override final { return true; };
-	void swapIn() override final{};
+	void swapIn() override final {};
 	[[nodiscard]] std::string toString() const final { return "None"; }
 
 	static EmptySensorInterface instance;

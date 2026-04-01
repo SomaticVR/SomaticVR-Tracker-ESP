@@ -55,15 +55,7 @@
 #define ENABLE_LEDC true
 
 namespace SlimeVR {
-enum LEDStage
-{
-	OFF,
-	ON,
-	GAP,
-	INTERVAL,
-	RAMP,
-	RAMP_CONTINUOUS
-};
+enum LEDStage { OFF, ON, GAP, INTERVAL, RAMP, RAMP_CONTINUOUS };
 
 class LEDManager {
 public:
@@ -75,21 +67,22 @@ public:
 	void on();
 
 	/*!
-     *  @brief Turns the LED off
+	 *  @brief Turns the LED off
 	 */
 	void off();
 #if ESP32 && ENABLE_LEDC
 	void setBrightness(float percent);
 	void setBrightness(unsigned int brightness);
 	void setRamp(float startPercent, float endPercent, unsigned long ms);
-	void setRamp(unsigned int startBrightness, unsigned int endBrightness, unsigned long ms);
+	void
+	setRamp(unsigned int startBrightness, unsigned int endBrightness, unsigned long ms);
 	void rampFromCurrent(float endPercent, unsigned long ms);
-	void rampFromCurrent(unsigned int endBrightness, unsigned long ms);        
+	void rampFromCurrent(unsigned int endBrightness, unsigned long ms);
 #endif
 	/*!
-		*  @brief Blink the LED for [time]ms. *Can* cause lag
-		*  @param time Amount of ms to turn the LED on
-		*/
+	 *  @brief Blink the LED for [time]ms. *Can* cause lag
+	 *  @param time Amount of ms to turn the LED on
+	 */
 	void blink(unsigned long time);
 
 	/*!
@@ -120,7 +113,7 @@ private:
 	unsigned int m_CurrentBrightness;
 	unsigned int m_rampStartBrightness;
 	unsigned int m_rampEndBrightness;
-#endif 
+#endif
 
 	Logging::Logger m_Logger = Logging::Logger("LEDManager");
 };

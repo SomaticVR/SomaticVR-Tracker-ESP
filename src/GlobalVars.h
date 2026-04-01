@@ -24,6 +24,7 @@
 
 #include <arduino-timer.h>
 
+#include "ChargerMonitor.h"
 #include "batterymonitor.h"
 #include "configuration/Configuration.h"
 #include "network/connection.h"
@@ -33,7 +34,6 @@
 #include "sensors/SensorManager.h"
 #include "status/LEDManager.h"
 #include "status/StatusManager.h"
-#include "ChargerMonitor.h"
 
 extern Timer<> globalTimer;
 extern SlimeVR::LEDManager ledManager;
