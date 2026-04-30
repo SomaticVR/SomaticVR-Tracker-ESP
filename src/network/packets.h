@@ -54,7 +54,6 @@ enum class SendPacketType : uint8_t {
 	// RotationAcceleration = 23,
 	AcknowledgeConfigChange = 24,
 	FlexData = 26,
-	// PositionData = 27,
 	Bundle = 100,
 	Inspection = 105,
 };
@@ -69,6 +68,7 @@ enum class ReceivePacketType : uint8_t {
 	SensorInfo = 15,
 	FeatureFlags = 22,
 	SetConfigFlag = 25,
+	Haptics = 30
 };
 
 enum class InspectionPacketType : uint8_t {
@@ -156,6 +156,12 @@ struct RotationDataPacket {
 	BigEndian<float> z;
 	BigEndian<float> w;
 	uint8_t accuracyInfo{};
+};
+
+struct HapticDataPacket {
+	BigEndian<float> intensity;
+	BigEndian<int> duration;
+	bool active;
 };
 
 struct MagnetometerAccuracyPacket {

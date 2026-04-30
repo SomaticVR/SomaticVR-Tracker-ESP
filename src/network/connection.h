@@ -146,7 +146,7 @@ private:
 
 	size_t write(const uint8_t* buffer, size_t size);
 	size_t write(uint8_t byte);
-
+	bool configured_haptic_pwm = false;
 	bool sendPacketType(SendPacketType type);
 	bool sendPacketNumber();
 	bool sendFloat(float f);

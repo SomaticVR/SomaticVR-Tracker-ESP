@@ -727,6 +727,7 @@ void Connection::update() {
 			break;
 
 		case ReceivePacketType::Vibrate:
+
 			break;
 
 		case ReceivePacketType::Handshake:
@@ -744,6 +745,33 @@ void Connection::update() {
 			returnLastPacket(len);
 			break;
 
+		case ReceivePacketType::Haptics: {
+			if (len < 10) {
+				m_Logger.warn("Wrong haptic packet");
+				break;
+			}
+			m_Logger.debug("Haptic packet received!");
+#ifdef PIN_TACT_MOTOR
+			HapticDataPacket hapticDataPacket;
+			memcpy(&hapticDataPacket, m_Packet + 4, sizeof(hapticDataPacket));
+			m_Logger.debug("Intensity: %f Duration: %d", (float)hapticDataPacket.intensity, (int)hapticDataPacket.duration);
+			float intensity = hapticDataPacket.intensity;
+			if (!configured_haptic_pwm) {
+				configured_haptic_pwm = true;
+				ledcAttachChannel(PIN_TACT_MOTOR, 20000, 8, 1);
+			}
+			if (intensity < 0.0f) {
+				intensity = 0.0f;
+			}
+			if (intensity > 1.0f) {
+				intensity = 1.0f;
+			}
+			int duty = (int)(intensity * 255.0f);
+
+			ledcWrite(PIN_TACT_MOTOR, duty);
+#endif
+			break;
+		}
 		case ReceivePacketType::SensorInfo: {
 			if (len < 6) {
 				m_Logger.warn("Wrong sensor info packet");
