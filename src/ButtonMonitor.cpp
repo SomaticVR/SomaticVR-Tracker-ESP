@@ -26,8 +26,8 @@
 #include "GlobalVars.h"
 #include "status/Status.h"
 
-#define SHUTDOWN_BUTTON_COUNT 100
-#define FULL_OFF_BUTTON_COUNT 1000
+#define SHUTDOWN_BUTTON_TIME 2000
+#define FULL_OFF_BUTTON_TIME 10000
 
 namespace SlimeVR {
 void ButtonMonitor::setup() {
@@ -49,13 +49,12 @@ void ButtonMonitor::update() {
 
 	m_LastUpdate = time;
 
-	m_Timer = 0;
 	// Advance stage
 	switch (m_CurrentState) {
 		case RELEASED:
 			if (isPressed()) {
 				m_CurrentState = JUSTPRESSED;
-				m_CurrentCount = 0;
+				m_PressedTime = time;
 			}
 			break;
 		case JUSTPRESSED:
@@ -63,21 +62,27 @@ void ButtonMonitor::update() {
 			m_CurrentState = PRESSED;
 		case PRESSED:
 			if (isPressed()) {
-				m_CurrentCount++;
-				// m_Logger.debug("Pressed count: %d", m_CurrentCount);
-				if (m_CurrentCount == SHUTDOWN_BUTTON_COUNT) {
-					statusManager.setStatus(Status::SHUTDOWN, true);
-					m_Logger.info("Entering Shutdown");
-				} else if (m_CurrentCount == FULL_OFF_BUTTON_COUNT) {
+				unsigned long pressedDiff = time - m_PressedTime;
+				// m_Logger.debug("Pressed diff: %ul", pressedDiff);
+                if (pressedDiff >= FULL_OFF_BUTTON_TIME)
+                {
+                    if (!statusManager.hasStatus(Status::SHUTDOWN)) {
+                        statusManager.setStatus(Status::SHUTDOWN, false);
+					}
 					m_Logger.info("Entering Full Off");
-					statusManager.setStatus(Status::SHUTDOWN, false);
 					ledManager.off();
 					chargerMonitor.turnFETOff();
 					digitalWrite(PIN_ENABLE_LATCH, LOW);
-					// Deep sleep for the max uint32 amount of time, effectively a
-					// shutdown
+					// Deep sleep for the max uint32 amount of time, effectively a shutdown
 					ESP.deepSleep(-1);
-				}
+
+                } else if (pressedDiff >= SHUTDOWN_BUTTON_TIME)
+                {
+                    if (!statusManager.hasStatus(Status::SHUTDOWN)) {
+                        statusManager.setStatus(Status::SHUTDOWN, true);
+                        m_Logger.info("Entering Shutdown");
+                    }
+                }
 			} else {
 				m_CurrentState = JUSTRELEASED;
 			}
