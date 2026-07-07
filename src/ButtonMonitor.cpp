@@ -64,25 +64,24 @@ void ButtonMonitor::update() {
 			if (isPressed()) {
 				unsigned long pressedDiff = time - m_PressedTime;
 				// m_Logger.debug("Pressed diff: %ul", pressedDiff);
-                if (pressedDiff >= FULL_OFF_BUTTON_TIME)
-                {
-                    if (!statusManager.hasStatus(Status::SHUTDOWN)) {
-                        statusManager.setStatus(Status::SHUTDOWN, false);
+				if (pressedDiff >= FULL_OFF_BUTTON_TIME) {
+					if (!statusManager.hasStatus(Status::SHUTDOWN)) {
+						statusManager.setStatus(Status::SHUTDOWN, false);
 					}
 					m_Logger.info("Entering Full Off");
 					ledManager.off();
 					chargerMonitor.turnFETOff();
 					digitalWrite(PIN_ENABLE_LATCH, LOW);
-					// Deep sleep for the max uint32 amount of time, effectively a shutdown
+					// Deep sleep for the max uint32 amount of time, effectively a
+					// shutdown
 					ESP.deepSleep(-1);
 
-                } else if (pressedDiff >= SHUTDOWN_BUTTON_TIME)
-                {
-                    if (!statusManager.hasStatus(Status::SHUTDOWN)) {
-                        statusManager.setStatus(Status::SHUTDOWN, true);
-                        m_Logger.info("Entering Shutdown");
-                    }
-                }
+				} else if (pressedDiff >= SHUTDOWN_BUTTON_TIME) {
+					if (!statusManager.hasStatus(Status::SHUTDOWN)) {
+						statusManager.setStatus(Status::SHUTDOWN, true);
+						m_Logger.info("Entering Shutdown");
+					}
+				}
 			} else {
 				m_CurrentState = JUSTRELEASED;
 			}
