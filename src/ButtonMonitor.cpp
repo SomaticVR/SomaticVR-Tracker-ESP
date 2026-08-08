@@ -71,7 +71,9 @@ void ButtonMonitor::update() {
 					m_Logger.info("Entering Full Off");
 					ledManager.off();
 					chargerMonitor.turnFETOff();
+					gpio_hold_dis((gpio_num_t)PIN_ENABLE_LATCH);
 					digitalWrite(PIN_ENABLE_LATCH, LOW);
+					gpio_hold_en((gpio_num_t)PIN_ENABLE_LATCH);
 					// Deep sleep for the max uint32 amount of time, effectively a
 					// shutdown
 					ESP.deepSleep(-1);
@@ -90,7 +92,9 @@ void ButtonMonitor::update() {
 			m_Logger.trace("Button Released");
 			if (statusManager.hasStatus(Status::SHUTDOWN)) {
 				statusManager.setStatus(Status::SHUTDOWN, false);
-				digitalWrite(PIN_ENABLE_LATCH, LOW);
+					gpio_hold_dis((gpio_num_t)PIN_ENABLE_LATCH);
+					digitalWrite(PIN_ENABLE_LATCH, LOW);
+					gpio_hold_en((gpio_num_t)PIN_ENABLE_LATCH);
 			}
 			m_CurrentState = RELEASED;
 			break;

@@ -79,8 +79,10 @@ void setup() {
 	buttonMonitor.setup();
 #endif
 #ifdef PIN_ENABLE_LATCH
+	gpio_hold_dis((gpio_num_t)PIN_ENABLE_LATCH);
 	pinMode(PIN_ENABLE_LATCH, OUTPUT);
 	digitalWrite(PIN_ENABLE_LATCH, buttonMonitor.isPressed() ? HIGH : LOW);
+	gpio_hold_en((gpio_num_t)PIN_ENABLE_LATCH);
 #endif
 #ifdef PIN_IMU_ENABLE
 	pinMode(PIN_IMU_ENABLE, OUTPUT);

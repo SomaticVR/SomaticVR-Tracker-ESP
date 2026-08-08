@@ -26,6 +26,9 @@
 
 #include "globals.h"
 #include "logging/Logger.h"
+#ifdef PIN_ENABLE_LATCH
+#include "driver/gpio.h" 
+#endif
 
 namespace SlimeVR {
 enum ButtonState { RELEASED, JUSTPRESSED, PRESSED, JUSTRELEASED };
