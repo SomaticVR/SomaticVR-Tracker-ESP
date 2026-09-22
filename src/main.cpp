@@ -81,7 +81,12 @@ void setup() {
 #ifdef PIN_ENABLE_LATCH
 	gpio_hold_dis((gpio_num_t)PIN_ENABLE_LATCH);
 	pinMode(PIN_ENABLE_LATCH, OUTPUT);
-	digitalWrite(PIN_ENABLE_LATCH, buttonMonitor.isPressed() ? HIGH : LOW);
+	// A software reset restarts a board that was already latched on, and nobody is holding
+	// the button through an OTA reboot, so the latch has to survive one. Panic, watchdog and
+	// brownout resets still power down; a cold start still needs the button.
+	const bool keepPowerLatched
+		= buttonMonitor.isPressed() || esp_reset_reason() == ESP_RST_SW;
+	digitalWrite(PIN_ENABLE_LATCH, keepPowerLatched ? HIGH : LOW);
 	gpio_hold_en((gpio_num_t)PIN_ENABLE_LATCH);
 #endif
 #ifdef PIN_IMU_ENABLE
